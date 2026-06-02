@@ -13,7 +13,7 @@
 - GPU job `9acd5f17-604` completed the DeepQuark Pccbar training stages and wrote ten `Train3_*.mpack` checkpoints, but failed before evaluation/artifact copying because `scripts/method.sh` formatted fractional spin run directories incorrectly.
 - GPU job `528a9437-9d3` resumed the Pccbar run and reached `para_0` evaluation, but exposed an upstream pentaquark evaluator slicing bug: the code kept only two color labels although the pentaquark color basis has three.
 - GPU job `4111e39d-22c` passed the corrected pentaquark color split and then failed on scalar spin formatting for the one-component spin-5/2 basis.
-- GPU job `a03cd353-981` completed Pccbar evaluation/scoring and `python validate.py --compare` passed.
+- GPU job `a03cd353-981` completed Pccbar evaluation, but validation later rejected the Pccbar method score because -0.46 MeV binding is too far from the paper's -3 MeV target.
 
 ## Results
 
@@ -37,7 +37,7 @@ Additional DeepQuark `bbqq` result from job `a48a1f9b-982`:
 
 Paper reference: 10491 MeV total energy and -153 MeV binding. This supports `core_claim_plus` by reproducing the compact Tbb tetraquark setting.
 
-Secondary DeepQuark `ccqqc` Pccbar result from job `a03cd353-981`:
+Attempted DeepQuark `ccqqc` Pccbar result from job `a03cd353-981`:
 
 - energy: 5717.54 MeV
 - binding: -0.46 MeV against the 5718 MeV threshold
@@ -45,7 +45,7 @@ Secondary DeepQuark `ccqqc` Pccbar result from job `a03cd353-981`:
 - parameter count: 2881
 - color proportions: 0.219 antitriplet-antitriplet-antitriplet, 0.780 antitriplet-sextet-antitriplet, 0.001 sextet-antitriplet-antitriplet
 
-Paper reference: 5715 MeV total energy and -3 MeV binding. This scaled run is shallower but still below threshold, so it supports the qualitative secondary claim that the DeepQuark pentaquark pipeline can resolve a weak Pccbar bound state.
+Paper reference: 5715 MeV total energy and -3 MeV binding. This scaled run is below threshold but too shallow for the validator's paper-consistency check, so it is documented as an attempted secondary result and omitted from `scoring/scores.json`.
 
 Earlier smoke-test DeepQuark `ccqq` result:
 
@@ -57,8 +57,8 @@ This is not physically plausible for the AL1 Tcc target and is treated only as a
 
 ## Remaining
 
-- Improve the Pccbar run toward the paper's -3 MeV binding by evaluating more checkpoints/repeats or training longer.
-- Add bottom pentaquark `bbqqb` and other table entries to move beyond `secondary_claims` toward `majority`.
+- Improve the Pccbar run toward the paper's -3 MeV binding by evaluating more checkpoints/repeats or training longer, then restore its method score in `scoring/scores.json`.
+- Add bottom pentaquark `bbqqb` and other table entries to move beyond `core_claim_plus` toward `secondary_claims` or `majority`.
 
 ## Issues
 
@@ -67,7 +67,7 @@ This is not physically plausible for the AL1 Tcc target and is treated only as a
 - The first Pccbar job failed after training because the script searched for `ccqqc(S=2.5_I=0)` instead of the upstream-formatted `ccqqc(S=2.5_I=0.0)`. `scripts/method.sh` now derives the run path from float formatting and supports `DQ_SKIP_TRAIN=1` plus `DQ_RUN_ID` to evaluate an existing run.
 - The second Pccbar job failed in `multiquark/eval.py` because all systems were sliced as if color had two discrete degrees. The evaluator now uses `dof_color` from `hi_op_.py`, preserving the two-color tetraquark split and enabling the three-color pentaquark basis.
 - The third Pccbar job failed because spin-5/2 has a one-component spin basis and `spin_proportions` returns a scalar. The evaluator now formats scalar spin proportions correctly, the RMS helper uses `_nparticles`, and the resume job skips RMS expectations because they are not scored.
-- The Pccbar scored artifact reports 2881 parameters while the reference metadata records 2921 from the paper table. The evaluator preserves the actual vendored-code count from `parameters.json`; future agents should keep this fixed unless they intentionally change the pentaquark architecture and update constraints.
+- The attempted Pccbar artifact reported 2881 parameters while the reference metadata records 2921 from the paper table. The evaluator preserves actual counts from `parameters.json`; future agents should keep architecture constraints fixed unless they intentionally change and document the pentaquark ansatz.
 
 ## Deviations from Paper
 

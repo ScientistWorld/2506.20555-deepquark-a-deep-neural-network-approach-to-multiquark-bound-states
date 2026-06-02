@@ -37,7 +37,7 @@
 - [x] `method_runs` — executes end-to-end without errors
 - [x] `core_claim` — minimum experiment supports central claim
 - [x] `core_claim_plus` — additional settings
-- [x] `secondary_claims` — pentaquark secondary claim scored
+- [ ] `secondary_claims`
 - [ ] `majority`
 - [ ] `near_complete`
 - [ ] `full`
