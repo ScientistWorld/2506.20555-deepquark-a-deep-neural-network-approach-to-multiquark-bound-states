@@ -15,6 +15,8 @@
 - GPU job `4111e39d-22c` passed the corrected pentaquark color split and then failed on scalar spin formatting for the one-component spin-5/2 basis.
 - GPU job `a03cd353-981` completed Pccbar evaluation, but validation later rejected the Pccbar method score because -0.46 MeV binding is too far from the paper's -3 MeV target.
 - GPU job `e794595d-5d4` completed a high-sample verification of the best Pccbar candidates and stabilized the partial pentaquark result at -0.83 MeV binding.
+- Continuation audit on 2026-06-02 confirmed the implementation and evaluator are trustworthy, then fixed `scripts/reproduce.sh` to regenerate both accepted Tcc and Tbb targets from scratch instead of relying on pre-existing artifacts.
+- Generated DeepQuark run directories under `method/DeepQuark/AL1/` were removed from the tracked source surface and are now ignored; the supported artifact interface remains `checkpoints/`.
 
 ## Results
 
@@ -128,6 +130,7 @@ This is not physically plausible for the AL1 Tcc target and is treated only as a
 ## Remaining
 
 - Current deliverables are complete through `core_claim_plus`.
+- `scripts/reproduce.sh` now runs both accepted experiments before invoking the reusable evaluator.
 - To reach `secondary_claims`, a future run should improve the Pccbar final-stage optimization enough to reproduce the paper's approximate -3 MeV binding, or add another validated non-tetraquark DeepQuark result such as `bbqqb`.
 - To reach `majority`, add more Table I/Table II entries and evaluate them with the same artifact-based scorer.
 
@@ -143,6 +146,7 @@ This is not physically plausible for the AL1 Tcc target and is treated only as a
 - `scripts/method.sh` now supports `DQ_EVAL_IRANGE` for focused reevaluation of selected DeepQuark checkpoints. This keeps future retry jobs inside the test-node limit without changing the evaluation metric or importing from the method into `eval/`.
 - The Train3_27, learning-rate-0.00002 Pccbar continuation did not produce a better variational state; selected high-sample reevaluation is the next lower-risk step.
 - The final high-sample Pccbar verification reduced Monte Carlo error but settled at -0.83 MeV binding, so it is not strong enough to claim the paper's secondary pentaquark result.
+- The continuation audit found that the previous `scripts/reproduce.sh` only launched the default Tcc method run before evaluating both accepted targets. This has been fixed by explicitly running Tcc and Tbb with the successful scaled VMC settings.
 
 ## Deviations from Paper
 

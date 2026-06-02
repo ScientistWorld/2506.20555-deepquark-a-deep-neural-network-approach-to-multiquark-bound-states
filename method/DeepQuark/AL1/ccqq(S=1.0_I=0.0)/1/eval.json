@@ -1,7 +1,0 @@
-{
-  "nchains": 64,
-  "nsweep": 4,
-  "nsample": 512,
-  "ndiscard": 16,
-  "sigma": 0.01
-}

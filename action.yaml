@@ -5,4 +5,4 @@ action: done
 gpus: 0
 test: false
 milestone: core_claim_plus
-notes: "Validated DeepQuark reproduction at core_claim_plus: Tcc and Tbb AL1 binding results are reproduced and scored; Pccbar remains documented as a partial optional target."
+notes: "Audited and restored core_claim_plus. Fixed reproduce.sh to regenerate both accepted Tcc/Tbb targets and removed generated DeepQuark AL1 run outputs from tracked source."
