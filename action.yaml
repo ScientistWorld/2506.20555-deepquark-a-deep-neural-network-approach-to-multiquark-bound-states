@@ -1,5 +1,5 @@
 action: submit
 gpus: 1
 test: false
-milestone: method_runs
-notes: "Larger Tcc AL1 DeepQuark run with 20k optimization samples, 100k final evaluation samples, and multiple SR blocks to pursue the core binding claim."
+milestone: core_claim
+notes: "Run the same scaled DeepQuark AL1 tetraquark protocol on bbqq to expand from the reproduced Tcc core claim toward core_claim_plus."

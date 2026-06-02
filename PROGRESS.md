@@ -8,10 +8,21 @@
 - `scripts/evaluate.sh` reads artifacts through `eval/deepquark_scores.py` and writes `scoring/scores.json` without importing `method/`.
 - GPU smoke job `e34f389c-e53` completed successfully and `python validate.py --compare` passed after method artifact scoring.
 - Reference/scoring metadata now matches the authors' actual parameter counts for the vendored `ccqq` configuration.
+- GPU job `a2bd95b6-2a9` reproduced the core Tcc AL1 binding claim with the actual DeepQuark VMC pipeline.
 
 ## Results
 
-Smoke-test DeepQuark `ccqq` result:
+Core DeepQuark `ccqq` result from job `a2bd95b6-2a9`:
+
+- energy: 3863.85 MeV
+- binding: -14.15 MeV against the 3878 MeV threshold
+- Monte Carlo error: 0.20 MeV
+- parameter count: 1857
+- color proportions: 0.61 antitriplet-triplet, 0.39 sextet-antisextet
+
+Paper reference: 3863 MeV total energy and -15 MeV binding. This supports the central claim that DeepQuark finds a shallow bound AL1 Tcc state below threshold.
+
+Earlier smoke-test DeepQuark `ccqq` result:
 
 - energy: 2991.15 MeV
 - binding: -886.85 MeV
@@ -21,16 +32,16 @@ This is not physically plausible for the AL1 Tcc target and is treated only as a
 
 ## Remaining
 
-- Run a larger `ccqq` job with paper-scale optimization samples and thousands of SR steps until the Tcc binding energy is near the reported shallow bound state.
-- Current submission target: one-GPU `ccqq` run with 20k optimization samples, 100k check/eval samples, and multiple SR blocks.
-- If core claim is reached, add `bbqq` and then `ccqqc` runs for broader coverage.
+- Run `bbqq` with the same DeepQuark AL1 tetraquark protocol to test the heavier Tbb bound state.
+- If Tbb succeeds, add `ccqqc` for broader pentaquark coverage.
 
 ## Issues
 
 - The upstream code requires JAX, Flax, and NetKet. The container setup worked on the smoke job.
-- The smoke score is overbound by far more than the reference because the run was deliberately tiny; this must be fixed through larger sampling/optimization before claiming `core_claim`.
+- The smoke score is overbound by far more than the reference because the run was deliberately tiny; it remains documented only as an execution check.
 
 ## Deviations from Paper
 
 - Initial smoke job scaled down Monte Carlo chains, samples, and optimization iterations. The algorithm, Hamiltonian, symmetry projections, model family, and coupled-channel representation were unchanged. This smoke run supports `method_runs` only.
-- The next job remains scale-reduced relative to the longest paper runs, but preserves the DeepQuark procedure and increases sampling enough to test the central shallow-binding claim.
+- The successful Tcc job remains scale-reduced relative to the longest paper runs, but preserved the DeepQuark procedure and reached the reported shallow-binding regime.
+- The next Tbb job uses the same scaled sample/iteration schedule as the successful Tcc run.

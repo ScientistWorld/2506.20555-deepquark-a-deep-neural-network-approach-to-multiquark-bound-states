@@ -1,6 +1,6 @@
 # Reproduction Milestones
 
-**Current: method_runs**
+**Current: core_claim**
 
 ## Progress Log
 
@@ -15,5 +15,10 @@
 - The vendored DeepQuark multiquark VMC pipeline trained, evaluated, wrote artifacts in `checkpoints/deepquark_ccqq`, and produced `scoring/scores.json`.
 - Smoke result was intentionally undertrained and overbound, so it does not support the core claim.
 
+### [2026-06-02 16:58] - core_claim
+- GPU job `a2bd95b6-2a9` completed the scaled AL1 `ccqq` Tcc run with the authors' DeepQuark VMC algorithm.
+- Reproduced a bound Tcc state: 3863.85 MeV total energy, -14.15 MeV binding against the 3878 MeV threshold, compared with the paper's -15 MeV.
+- Evaluation retained constraint metrics: Monte Carlo error 0.20 MeV, 1857 parameters, and color-channel proportions.
+
 ## Stop Justification
-- Not stopped. A larger Tcc convergence job is being submitted to pursue the core claim.
+- Not stopped. A Tbb run is being submitted to expand beyond the minimum core claim.
