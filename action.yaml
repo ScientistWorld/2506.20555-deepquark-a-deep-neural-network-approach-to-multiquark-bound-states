@@ -1,8 +1,8 @@
 # IMPORTANT: Once you set action to 'submit' or 'done', STOP immediately.
 # Do NOT sleep, poll, or wait for jobs. The system reads this file
 # only after your turn ends. Sleeping blocks the entire pipeline.
-action: pending
+action: submit
 gpus: 1
-test: false
+test: true
 milestone: core_claim_plus
-notes: ""
+notes: "Evaluate existing Pccbar DeepQuark checkpoints 0-9 with two repeats, then rescore artifacts to see whether the secondary pentaquark binding claim is recovered."

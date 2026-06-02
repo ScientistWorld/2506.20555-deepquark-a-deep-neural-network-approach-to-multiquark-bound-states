@@ -57,6 +57,7 @@ This is not physically plausible for the AL1 Tcc target and is treated only as a
 
 ## Remaining
 
+- Submitted an evaluation-only Pccbar follow-up to score all ten existing `Train3_*.mpack` checkpoints with two repeats, aiming to improve the shallow pentaquark binding estimate before deciding whether longer training is needed.
 - Improve the Pccbar run toward the paper's -3 MeV binding by evaluating more checkpoints/repeats or training longer, then restore its method score in `scoring/scores.json`.
 - Add bottom pentaquark `bbqqb` and other table entries to move beyond `core_claim_plus` toward `secondary_claims` or `majority`.
 
