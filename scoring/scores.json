@@ -29,6 +29,14 @@
           "parameter_count": 0.0,
           "color_3bar3": 0.0,
           "color_6bar6": 0.0
+        },
+        "deepquark": {
+          "energy_mev": 10490.65,
+          "binding_mev": -153.35000000000036,
+          "mc_error_mev": 0.19,
+          "parameter_count": 1857.0,
+          "color_3bar3": 0.968,
+          "color_6bar6": 0.032
         }
       }
     },
