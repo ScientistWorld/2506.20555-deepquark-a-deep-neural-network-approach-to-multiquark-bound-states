@@ -40,5 +40,17 @@
     "ndiscard": 200,
     "lr": 0.001,
     "sigma": 0.01
+  },
+  "Train3_continued": {
+    "from_checkpoint": 9,
+    "first_new_checkpoint": 10,
+    "blocks": 10,
+    "n_iter": 50,
+    "nchains": 2000,
+    "nsweep": 20,
+    "nsample": 20000,
+    "ndiscard": 200,
+    "lr": 0.001,
+    "sigma": 0.01
   }
 }
