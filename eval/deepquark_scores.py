@@ -15,14 +15,14 @@ EXPERIMENTS = {
         "artifact": "deepquark_ccqq",
         "method": "deepquark",
         "threshold_mev": 1862.0 + 2016.0,
-        "expected_params": 1889,
+        "expected_params": 1857,
         "color_keys": ("color_3bar3", "color_6bar6"),
     },
     "tbb_al1_binding": {
         "artifact": "deepquark_bbqq",
         "method": "deepquark",
         "threshold_mev": 5294.0 + 5350.0,
-        "expected_params": 1889,
+        "expected_params": 1857,
         "color_keys": ("color_3bar3", "color_6bar6"),
     },
     "pcc_al1_binding": {

@@ -36,7 +36,7 @@
           "energy_mev": 3863.0,
           "binding_mev": -15.0,
           "mc_error_mev": 0.1,
-          "parameter_count": 1889.0,
+          "parameter_count": 1857.0,
           "color_3bar3": 0.55,
           "color_6bar6": 0.45
         }
@@ -78,7 +78,7 @@
           "energy_mev": 10491.0,
           "binding_mev": -153.0,
           "mc_error_mev": 0.1,
-          "parameter_count": 1889.0,
+          "parameter_count": 1857.0,
           "color_3bar3": 0.97,
           "color_6bar6": 0.03
         }

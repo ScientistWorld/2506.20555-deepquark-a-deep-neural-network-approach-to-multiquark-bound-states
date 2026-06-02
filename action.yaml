@@ -1,5 +1,5 @@
 action: submit
 gpus: 1
-test: true
-milestone: none
-notes: "GPU smoke test for the packaged DeepQuark ccqq AL1 VMC pipeline with tiny sample counts; expected to verify environment, method artifact generation, and scoring."
+test: false
+milestone: method_runs
+notes: "Larger Tcc AL1 DeepQuark run with 20k optimization samples, 100k final evaluation samples, and multiple SR blocks to pursue the core binding claim."
