@@ -29,3 +29,8 @@
 - Job `e577a7e1-2a0` completed the Train3_25, learning-rate-0.00005 Pccbar refinement and evaluated checkpoints 0-39.
 - Best Pccbar result improved to -1.47 MeV binding at Train3_27, still below the paper's -3 MeV secondary target.
 - Added a focused checkpoint-evaluation hook and prepared a Train3_27, learning-rate-0.00002 retry over checkpoints 40-49.
+
+### [2026-06-02 19:31] - core_claim_plus
+- Job `ddf3d367-3f6` completed the Train3_27, learning-rate-0.00002 Pccbar retry and selected-checkpoint evaluation.
+- Best selected result was Train3_43 at -1.12 MeV binding, worse than the previous -1.47 MeV estimate.
+- Prepared a no-continuation, higher-sample reevaluation of Train3_25, Train3_27, and Train3_43 to stabilize the final Pccbar score.

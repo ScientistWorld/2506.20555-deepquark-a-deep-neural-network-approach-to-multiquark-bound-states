@@ -34,16 +34,21 @@ export DQ_RESUME_TRAIN3_ITERS=50
 export DQ_RESUME_FROM=27
 export DQ_RESUME_START_INDEX=40
 export DQ_RESUME_LR=0.00002
+export DQ_SKIP_RESUME=1
 export DQ_EVAL_NCHAINS=2000
 export DQ_EVAL_NSWEEP=100
-export DQ_EVAL_NSAMPLE=100000
+export DQ_EVAL_NSAMPLE=400000
 export DQ_EVAL_NDISCARD=1000
 export DQ_TRAIN3_BLOCKS=40
-export DQ_EVAL_IRANGE='[25, 27, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49]'
+export DQ_EVAL_IRANGE='[25, 27, 43]'
 export DQ_EVAL_REPEATS=2
 export DQ_EVAL_SKIP_RMS=1
 
 cd /home/user/method/DeepQuark
-python multiquark/continue_train3.py "$DQ_POTENTIAL" "$DQ_QUARKS" "$DQ_SPIN" "$DQ_ISOSPIN" --n "$DQ_RUN_ID"
+if [ "${DQ_SKIP_RESUME:-0}" != "1" ]; then
+  python multiquark/continue_train3.py "$DQ_POTENTIAL" "$DQ_QUARKS" "$DQ_SPIN" "$DQ_ISOSPIN" --n "$DQ_RUN_ID"
+else
+  echo "Skipping Train3 continuation because DQ_SKIP_RESUME=1"
+fi
 cd /home/user
 bash scripts/reproduce.sh
