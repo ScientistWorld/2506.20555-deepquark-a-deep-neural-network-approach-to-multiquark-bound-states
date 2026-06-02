@@ -30,5 +30,10 @@
 - The job failed before evaluation because the wrapper script looked for the wrong fractional-spin run directory, so no Pccbar score was claimed.
 - Added resumable evaluation support and fixed run directory formatting before resubmitting evaluation of the existing Pccbar checkpoints.
 
+### [2026-06-02 17:20] - core_claim_plus
+- GPU job `528a9437-9d3` resumed the existing Pccbar checkpoints and entered evaluation, confirming the directory fix worked.
+- Evaluation failed at `para_0` because upstream pentaquark color samples were sliced with two labels instead of the three-label pentaquark color basis.
+- Patched `multiquark/eval.py` to split color and spin samples using `dof_color`, then resubmitted a shorter evaluation over the first three final-stage checkpoints.
+
 ## Stop Justification
 - Not stopped. A pentaquark run is being submitted to cover a secondary DeepQuark claim.

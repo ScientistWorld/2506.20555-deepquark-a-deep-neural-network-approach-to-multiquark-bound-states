@@ -14,7 +14,7 @@ from model_ import QQqq_FCN, Q1Q2qq_FCN, exchange_indices, Penta_FCN
 from sampler_ import GaussianFlipRule
 from config_ import quarks, MASS, S, I, default_serializer, out_path, nlayers, nhid, bound, sigma, n, irange
 from operator_ import MultiPotentialEnergy
-from hi_op_ import (_nd, _nparticles, hi, hi_dis, n_discrete, ha,
+from hi_op_ import (_nd, _nparticles, hi, hi_dis, n_discrete, dof_color, ha,
                     color_proportions, spin_proportions, ms_radius)
 
 """Model"""
@@ -70,8 +70,8 @@ for i in irange:
         e = eval_vs.expect(ha)
 
         samples = eval_vs.samples
-        color_samples = samples[:, :, -n_discrete:-n_discrete + 2]
-        spin_samples = samples[:, :, -n_discrete + 2:]
+        color_samples = samples[:, :, -n_discrete:-n_discrete + dof_color]
+        spin_samples = samples[:, :, -n_discrete + dof_color:]
         color = color_proportions(color_samples)
         spin = spin_proportions(spin_samples)
 

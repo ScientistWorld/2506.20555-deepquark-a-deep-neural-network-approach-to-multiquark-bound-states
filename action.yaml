@@ -2,4 +2,4 @@ action: submit
 gpus: 1
 test: false
 milestone: core_claim_plus
-notes: "Evaluate the completed AL1 ccqqc spin-5/2 DeepQuark run after fixing fractional-spin artifact path handling."
+notes: "Evaluate three completed AL1 ccqqc spin-5/2 DeepQuark checkpoints after fixing pentaquark color/spin slicing."
