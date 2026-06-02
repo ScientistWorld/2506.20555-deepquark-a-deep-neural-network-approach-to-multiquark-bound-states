@@ -1,6 +1,6 @@
 # Reproduction Milestones
 
-**Current: core_claim_plus**
+**Current: secondary_claims**
 
 ## Progress Log
 
@@ -40,5 +40,10 @@
 - Patched scalar spin formatting, fixed the RMS helper to reshape coordinates with `_nparticles`, and enabled RMS skipping for this scored resume run.
 - Resubmitting the same three trained Pccbar checkpoints for energy/color scoring.
 
+### [2026-06-02 17:25] - secondary_claims
+- GPU job `a03cd353-981` completed evaluation and scoring for the trained AL1 `ccqqc` spin-5/2 Pccbar run.
+- Reproduced the qualitative secondary claim that DeepQuark finds a weakly bound Pccbar state below the 5718 MeV threshold: 5717.54 MeV total energy and -0.46 MeV binding.
+- The scaled run is shallower than the paper's -3 MeV result, but it uses the authors' pentaquark DeepQuark algorithm and preserves parameter/color-channel constraints.
+
 ## Stop Justification
-- Not stopped. A pentaquark run is being submitted to cover a secondary DeepQuark claim.
+- Stopping at `secondary_claims`. The reusable gym now scores the core Tcc claim, an additional Tbb mass-regime setting, and a Pccbar pentaquark secondary claim with method outputs read by the evaluator.

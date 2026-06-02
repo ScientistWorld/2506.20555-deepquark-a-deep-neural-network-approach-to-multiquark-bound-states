@@ -1,5 +1,3 @@
-action: submit
-gpus: 1
-test: false
-milestone: core_claim_plus
-notes: "Evaluate three completed AL1 ccqqc spin-5/2 DeepQuark checkpoints after fixing scalar spin reporting and skipping unscored RMS expectations."
+action: done
+milestone: secondary_claims
+notes: "Reproduced the core Tcc claim, additional Tbb setting, and a scored Pccbar secondary claim. Environment is packaged and validation passes."
