@@ -118,4 +118,4 @@ The evaluator currently supports artifacts named `deepquark_ccqq`, `deepquark_bb
 **Current: core_claim_plus**
 
 ## Stop Justification
-- Completed at milestone `secondary_claims`.
+- Completed at milestone `core_claim_plus`.
