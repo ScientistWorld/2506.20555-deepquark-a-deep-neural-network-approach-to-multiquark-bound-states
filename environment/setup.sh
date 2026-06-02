@@ -16,4 +16,7 @@
 
 set -e
 
-# uv pip install --system <packages>
+uv pip install --system \
+  "jax[cuda12]==0.5.3" \
+  "flax>=0.10,<0.11" \
+  "netket==3.17.*"

@@ -1,20 +1,36 @@
 #!/bin/bash
-# Example job script submitted via the end-of-turn YAML block.
-#
-# This runs inside the compute container with:
-#   - Your workspace mounted at /home/user
-#   - GPU(s) available
-#   - No internet access
-#
-# Make sure all data, code, and dependencies are already in the
-# workspace or baked into the container before submitting.
-
-set -e
+set -euo pipefail
 
 cd /home/user
 
-# Example: train a model
-python method/train.py --epochs 10 --lr 0.001
+export JAX_PLATFORM_NAME="${JAX_PLATFORM_NAME:-gpu}"
+export XLA_PYTHON_CLIENT_PREALLOCATE=false
 
-# Example: evaluate
-bash scripts/evaluate.sh checkpoints/best.pt
+export DQ_QUARKS=ccqq
+export DQ_SPIN=1
+export DQ_ISOSPIN=0
+export DQ_ARTIFACT_NAME=deepquark_ccqq
+
+export DQ_NCHAINS=64
+export DQ_NSWEEP=4
+export DQ_NSAMPLE=512
+export DQ_NDISCARD=16
+export DQ_TRAIN1_ITERS=2
+export DQ_TRAIN2_BLOCKS=1
+export DQ_TRAIN2_ITERS=2
+export DQ_TRAIN2_NDISCARD=16
+export DQ_CHECK_NCHAINS=64
+export DQ_CHECK_NSWEEP=4
+export DQ_CHECK_NSAMPLE=512
+export DQ_CHECK_NDISCARD=16
+export DQ_CHECK_REPEATS=1
+export DQ_VARIANCE_TARGET=1000000
+export DQ_TRAIN3_BLOCKS=1
+export DQ_TRAIN3_ITERS=1
+export DQ_EVAL_NCHAINS=64
+export DQ_EVAL_NSWEEP=4
+export DQ_EVAL_NSAMPLE=512
+export DQ_EVAL_NDISCARD=16
+export DQ_EVAL_REPEATS=1
+
+bash scripts/reproduce.sh

@@ -18,7 +18,7 @@
 
 # --- CPU-only base (default) ---
 Bootstrap: docker
-From: python:3.11-slim
+From: python:3.12-slim
 
 # --- GPU / CUDA base (uncomment if your paper needs GPU) ---
 # Bootstrap: docker

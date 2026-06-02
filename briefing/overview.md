@@ -1,14 +1,5 @@
 # Overview
 
-- **Paper ID:** <!-- e.g. 1706.03762 -->
-- **Title:** <!-- e.g. Attention Is All You Need -->
-- **Domain:** <!-- e.g. Computer Vision / Object Detection -->
-- **TL;DR:** <!-- One sentence: what this paper does and why it matters -->
+DeepQuark applies neural-network variational Monte Carlo to multiquark bound states in constituent quark models. Its central claim is that a symmetry-informed neural wavefunction can solve tetraquark and pentaquark systems competitively with established few-body methods while handling coupled color-spin channels and complex confinement interactions.
 
-## Short Summary
-
-<!-- 3-5 sentences covering the problem, approach, and main findings -->
-
-## Key Results
-
-<!-- 2-3 bullet points: main findings or numbers in bullet points -->
+This reproduction packages the authors' released implementation, scores AL1 binding energies for representative tetraquark and pentaquark targets, and exposes a reusable evaluator for future method improvements.

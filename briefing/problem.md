@@ -1,17 +1,13 @@
-# Problem Definition
+# Problem
 
-What problem does this paper address? Write this so that someone with no knowledge of the paper can understand what needs to be solved and how success is measured.
+Solve nonrelativistic few-body bound states in a constituent quark model for multiquark systems with fixed flavor, total spin, total isospin, parity, and color-singlet constraints.
 
-Do NOT describe the paper's method or solution here — only the problem itself. Think about if a future scientist agent try to solve this problem from scratch without knowing what approach the paper took. If you leak the solution, you compromise the benchmark.
+The task is to estimate the ground-state energy of selected AL1 Hamiltonians and decide whether a state is bound relative to the lowest allowed two-hadron threshold. A valid solution must handle continuous particle coordinates and discrete color-spin-isospin coupled channels while respecting identical-particle exchange symmetry.
 
-## Research Question
+The initial gym targets are:
 
-<!-- What problem or challenge does this paper tackle? What gap in existing work does it address? -->
+- isoscalar vector doubly charmed tetraquark `ccqq`, spin-parity `1+`
+- isoscalar vector doubly bottom tetraquark `bbqq`, spin-parity `1+`
+- isoscalar triply heavy pentaquark `ccqqc`, spin-parity `5/2-`
 
-## Why It Matters
-
-<!-- Why is this problem important? What would a good solution enable? Make it short -->
-
-## Success Criteria
-
-<!-- What would a successful solution look like? What properties should it have? This is about the goal, not the paper's specific approach. Make it short -->
+All energies are reported in MeV and binding energies are measured relative to the AL1 model thresholds listed in the paper.
