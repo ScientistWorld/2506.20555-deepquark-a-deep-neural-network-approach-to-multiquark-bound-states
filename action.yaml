@@ -5,4 +5,4 @@ action: submit
 gpus: 1
 test: true
 milestone: core_claim_plus
-notes: "Evaluate existing Pccbar DeepQuark checkpoints 0-9 with two repeats, then rescore artifacts to see whether the secondary pentaquark binding claim is recovered."
+notes: "Audit passed for real DeepQuark VMC implementation and honest artifact-based evaluation. Submit evaluation-only Pccbar job over checkpoints 0-9 with two repeats, then rescore to test the secondary pentaquark binding claim."
