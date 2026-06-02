@@ -1,0 +1,172 @@
+#!/usr/bin/env python3
+"""Held-out test-slice scorer for DeepQuark-style method artifacts.
+
+This evaluator reads artifacts from checkpoints/<method>_<system>/ and scores
+the complementary stored evaluation records to eval/train/evaluate.py. It does
+not import method code or rerun optimization/inference.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import math
+import re
+from pathlib import Path
+
+
+SLICE = "test"
+
+EXPERIMENTS = {
+    "tcc_al1_binding": {
+        "suffix": "ccqq",
+        "threshold_mev": 1862.0 + 2016.0,
+        "expected_params": 1857,
+        "color_keys": ("color_3bar3", "color_6bar6"),
+    },
+    "tbb_al1_binding": {
+        "suffix": "bbqq",
+        "threshold_mev": 5294.0 + 5350.0,
+        "expected_params": 1857,
+        "color_keys": ("color_3bar3", "color_6bar6"),
+    },
+}
+
+
+def _load_json(path: Path) -> dict:
+    with path.open("r", encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def _split_accepts(checkpoint_key: str, repeat_key: str) -> bool:
+    token = f"{checkpoint_key}:{repeat_key}"
+    return sum(ord(char) for char in token) % 2 != 0
+
+
+def _best_eval(results: dict) -> dict:
+    selected = []
+    fallback = []
+    for checkpoint_key, checkpoint_result in sorted(results.items(), key=lambda item: str(item[0])):
+        if not isinstance(checkpoint_result, dict):
+            continue
+        for repeat_key, repeated_eval in sorted(checkpoint_result.items(), key=lambda item: str(item[0])):
+            if not isinstance(repeated_eval, dict) or "Emean" not in repeated_eval:
+                continue
+            fallback.append(repeated_eval)
+            if _split_accepts(str(checkpoint_key), str(repeat_key)):
+                selected.append(repeated_eval)
+    candidates = selected or fallback
+    if not candidates:
+        raise ValueError("No evaluation records with Emean were found")
+    return min(candidates, key=lambda record: float(record["Emean"]))
+
+
+def _parse_color(text: str, nkeys: int) -> list[float]:
+    values = [float(value) for value in re.findall(r":([0-9.]+)", text)]
+    if len(values) < nkeys:
+        values.extend([math.nan] * (nkeys - len(values)))
+    return values[:nkeys]
+
+
+def _method_dirs(artifact_root: Path, suffix: str) -> dict[str, Path]:
+    methods = {}
+    for artifact_dir in sorted(artifact_root.glob(f"*_{suffix}")):
+        if not artifact_dir.is_dir():
+            continue
+        if not (artifact_dir / "results.json").exists():
+            continue
+        method_name = artifact_dir.name[: -(len(suffix) + 1)]
+        if method_name:
+            methods[method_name] = artifact_dir
+    return methods
+
+
+def _expected_methods(train_scores_path: Path, exp_name: str) -> set[str] | None:
+    if not train_scores_path.exists():
+        return None
+    train_scores = _load_json(train_scores_path)
+    results = train_scores.get("experiments", {}).get(exp_name, {}).get("results", {})
+    return set(results)
+
+
+def _baseline(config: dict) -> dict:
+    scores = {
+        "energy_mev": config["threshold_mev"],
+        "binding_mev": 0.0,
+        "mc_error_mev": 0.0,
+        "parameter_count": 0.0,
+    }
+    for key in config["color_keys"]:
+        scores[key] = 0.0
+    return scores
+
+
+def _score_artifact(artifact_dir: Path, config: dict) -> dict:
+    result = _best_eval(_load_json(artifact_dir / "results.json"))
+    params = _load_json(artifact_dir / "parameters.json")
+
+    energy_mev = float(result["Emean"]) * 1000.0
+    sigma_mev = float(result.get("Esigma", 0.0)) * 1000.0
+    binding_mev = energy_mev - config["threshold_mev"]
+    para_num = float(params.get("hyperparams", {}).get("para_num", config["expected_params"]))
+    colors = _parse_color(result.get("color", ""), len(config["color_keys"]))
+
+    scores = {
+        "energy_mev": energy_mev,
+        "binding_mev": binding_mev,
+        "mc_error_mev": sigma_mev,
+        "parameter_count": para_num,
+    }
+    for key, value in zip(config["color_keys"], colors):
+        scores[key] = value
+    return scores
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--artifacts", default="checkpoints", help="directory containing method artifacts")
+    parser.add_argument("--output", default="scoring/scores_test.json")
+    parser.add_argument("--train-scores", default="scoring/scores_train.json")
+    parser.add_argument(
+        "--experiments",
+        default=",".join(EXPERIMENTS),
+        help="comma-separated experiment names to include in the test-slice scores",
+    )
+    args = parser.parse_args()
+
+    artifact_root = Path(args.artifacts)
+    train_scores_path = Path(args.train_scores)
+    requested = [name.strip() for name in args.experiments.split(",") if name.strip()]
+    unknown = sorted(set(requested) - set(EXPERIMENTS))
+    if unknown:
+        raise ValueError(f"Unknown experiment(s): {', '.join(unknown)}")
+
+    scored = {"slice": SLICE, "experiments": {}}
+    for exp_name in requested:
+        config = EXPERIMENTS[exp_name]
+        discovered = _method_dirs(artifact_root, config["suffix"])
+        expected = _expected_methods(train_scores_path, exp_name)
+        method_names = sorted(expected if expected is not None else {"threshold_baseline", *discovered})
+
+        results = {}
+        for method_name in method_names:
+            if method_name == "threshold_baseline":
+                results[method_name] = _baseline(config)
+                continue
+            artifact_dir = discovered.get(method_name)
+            if artifact_dir is None:
+                raise FileNotFoundError(
+                    f"Train scores include method {method_name!r} for {exp_name}, "
+                    f"but no checkpoints/{method_name}_{config['suffix']} artifact exists"
+                )
+            results[method_name] = _score_artifact(artifact_dir, config)
+        scored["experiments"][exp_name] = {"results": results}
+
+    output_path = Path(args.output)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with output_path.open("w", encoding="utf-8") as handle:
+        json.dump(scored, handle, indent=2)
+
+
+if __name__ == "__main__":
+    main()
