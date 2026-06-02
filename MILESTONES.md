@@ -34,3 +34,8 @@
 - Job `ddf3d367-3f6` completed the Train3_27, learning-rate-0.00002 Pccbar retry and selected-checkpoint evaluation.
 - Best selected result was Train3_43 at -1.12 MeV binding, worse than the previous -1.47 MeV estimate.
 - Prepared a no-continuation, higher-sample reevaluation of Train3_25, Train3_27, and Train3_43 to stabilize the final Pccbar score.
+
+### [2026-06-02 19:58] - core_claim_plus
+- Job `e794595d-5d4` completed high-sample Pccbar verification over Train3_25, Train3_27, and Train3_43.
+- Final Pccbar score is -0.83 MeV binding with 0.21 MeV Monte Carlo error, below threshold but too shallow for the paper's -3 MeV secondary claim.
+- Reproduction is packaged and validated at `core_claim_plus`; higher milestones require stronger Pccbar optimization or additional table entries.

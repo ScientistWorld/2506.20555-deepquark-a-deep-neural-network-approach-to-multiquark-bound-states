@@ -1,8 +1,6 @@
 # IMPORTANT: Once you set action to 'submit' or 'done', STOP immediately.
 # Do NOT sleep, poll, or wait for jobs. The system reads this file
 # only after your turn ends. Sleeping blocks the entire pipeline.
-action: submit
-gpus: 1
-test: true
+action: done
 milestone: core_claim_plus
-notes: "Run no further training; high-sample evaluate DeepQuark Pccbar checkpoints 25, 27, and 43 with 400000 samples per repeat, then rescore."
+notes: "Core Tcc and additional Tbb DeepQuark AL1 claims are reproduced and packaged. Pccbar was implemented and evaluated as a partial secondary attempt but did not reach the paper's -3 MeV binding."

@@ -14,6 +14,7 @@
 - GPU job `528a9437-9d3` resumed the Pccbar run and reached `para_0` evaluation, but exposed an upstream pentaquark evaluator slicing bug: the code kept only two color labels although the pentaquark color basis has three.
 - GPU job `4111e39d-22c` passed the corrected pentaquark color split and then failed on scalar spin formatting for the one-component spin-5/2 basis.
 - GPU job `a03cd353-981` completed Pccbar evaluation, but validation later rejected the Pccbar method score because -0.46 MeV binding is too far from the paper's -3 MeV target.
+- GPU job `e794595d-5d4` completed a high-sample verification of the best Pccbar candidates and stabilized the partial pentaquark result at -0.83 MeV binding.
 
 ## Results
 
@@ -104,6 +105,18 @@ DeepQuark `ccqqc` Pccbar low-step retry from job `ddf3d367-3f6`:
 
 This branch did not improve on the previous Train3_27 estimate and later checkpoints drifted above threshold. The next job disables further continuation and performs a higher-sample evaluation of candidates Train3_25, Train3_27, and Train3_43 with 400000 samples per repeat.
 
+Final high-sample DeepQuark `ccqqc` Pccbar verification from job `e794595d-5d4`:
+
+- no further training; evaluated Train3_25, Train3_27, and Train3_43 with 400000 samples per repeat
+- best checkpoint/repeat: Train3_27 repeat 2
+- energy: 5717.17 MeV
+- binding: -0.83 MeV against the 5718 MeV threshold
+- Monte Carlo error: 0.21 MeV
+- parameter count: 2881
+- color proportions: 0.224 antitriplet-antitriplet-antitriplet, 0.775 antitriplet-sextet-antitriplet, 0.001 sextet-antitriplet-antitriplet
+
+This confirms the implemented pentaquark pipeline finds a shallow below-threshold state with the expected dominant color channel, but it does not reproduce the paper's -3 MeV secondary binding within the current compute budget. The result is retained in `scoring/scores.json` as a partial secondary attempt, while the achieved milestone remains `core_claim_plus`.
+
 Earlier smoke-test DeepQuark `ccqq` result:
 
 - energy: 2991.15 MeV
@@ -114,8 +127,9 @@ This is not physically plausible for the AL1 Tcc target and is treated only as a
 
 ## Remaining
 
-- Verify the best Pccbar checkpoint candidates with a higher-sample evaluation before deciding whether the secondary pentaquark claim is strong enough to retain or should remain documented as partial.
-- Add bottom pentaquark `bbqqb` and other table entries to move beyond `core_claim_plus` toward `secondary_claims` or `majority`.
+- Current deliverables are complete through `core_claim_plus`.
+- To reach `secondary_claims`, a future run should improve the Pccbar final-stage optimization enough to reproduce the paper's approximate -3 MeV binding, or add another validated non-tetraquark DeepQuark result such as `bbqqb`.
+- To reach `majority`, add more Table I/Table II entries and evaluate them with the same artifact-based scorer.
 
 ## Issues
 
@@ -128,6 +142,7 @@ This is not physically plausible for the AL1 Tcc target and is treated only as a
 - The checkpoint-9 Pccbar continuation at learning rate 0.001 diverged from the shallow bound-state region. `continue_train3.py` now supports `DQ_RESUME_FROM` and `DQ_RESUME_START_INDEX` so follow-up jobs can branch from a selected stable checkpoint without overwriting prior artifacts.
 - `scripts/method.sh` now supports `DQ_EVAL_IRANGE` for focused reevaluation of selected DeepQuark checkpoints. This keeps future retry jobs inside the test-node limit without changing the evaluation metric or importing from the method into `eval/`.
 - The Train3_27, learning-rate-0.00002 Pccbar continuation did not produce a better variational state; selected high-sample reevaluation is the next lower-risk step.
+- The final high-sample Pccbar verification reduced Monte Carlo error but settled at -0.83 MeV binding, so it is not strong enough to claim the paper's secondary pentaquark result.
 
 ## Deviations from Paper
 
@@ -135,3 +150,4 @@ This is not physically plausible for the AL1 Tcc target and is treated only as a
 - The successful Tcc job remains scale-reduced relative to the longest paper runs, but preserved the DeepQuark procedure and reached the reported shallow-binding regime.
 - The successful Tbb job used the same scaled sample/iteration schedule as the successful Tcc run.
 - The Pccbar job used the trained first three final-stage checkpoints and one evaluation repeat to fit the one-hour resume window. RMS expectations were skipped because scoring uses energy, Monte Carlo error, parameter count, and color-channel proportions.
+- Later Pccbar retries extended Train3 through checkpoint 49 and then performed a high-sample selected-checkpoint verification. The algorithm and Hamiltonian were unchanged, but the optimized ansatz parameter count is 2881 rather than the 2921 reported in the paper metadata.
