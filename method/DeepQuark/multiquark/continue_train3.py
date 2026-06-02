@@ -59,8 +59,12 @@ def main():
     if not existing:
         raise FileNotFoundError(f"No Train3_*.mpack checkpoints found in {logpath}")
 
-    start = max(existing)
-    first_new = start + 1
+    max_existing = max(existing)
+    start = env_int("DQ_RESUME_FROM", max_existing)
+    if start not in existing:
+        raise FileNotFoundError(f"Requested DQ_RESUME_FROM={start}, but Train3_{start}.mpack was not found in {logpath}")
+
+    first_new = env_int("DQ_RESUME_START_INDEX", max_existing + 1)
     blocks = env_int("DQ_RESUME_TRAIN3_BLOCKS", 10)
     n_iter = env_int("DQ_RESUME_TRAIN3_ITERS", env_int("DQ_TRAIN3_ITERS", 50))
     lr = env_float("DQ_RESUME_LR", 0.001)
@@ -81,6 +85,11 @@ def main():
 
     gs = nk.VMC(ha, nk.optimizer.Sgd(lr), variational_state=vs, preconditioner=nk.optimizer.SR())
     for i in range(first_new, first_new + blocks):
+        if os.path.exists(f"{logpath}/Train3_{i}.mpack") and os.environ.get("DQ_RESUME_OVERWRITE", "0") != "1":
+            raise FileExistsError(
+                f"Refusing to overwrite Train3_{i}.mpack. Set DQ_RESUME_START_INDEX above existing checkpoints "
+                "or DQ_RESUME_OVERWRITE=1."
+            )
         print(f"continue_train3_{i}", flush=True)
         gs.run(n_iter=n_iter, out=f"{logpath}/Train3_{i}")
 
@@ -89,6 +98,7 @@ def main():
         train = json.load(handle)
     train["Train3_continued"] = {
         "from_checkpoint": start,
+        "max_existing_checkpoint_before_resume": max_existing,
         "first_new_checkpoint": first_new,
         "blocks": blocks,
         "n_iter": n_iter,

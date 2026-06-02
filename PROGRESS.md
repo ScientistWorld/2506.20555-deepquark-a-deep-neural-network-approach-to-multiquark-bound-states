@@ -57,6 +57,17 @@ Follow-up DeepQuark `ccqqc` Pccbar evaluation from job `e3faa567-af8`:
 
 This is below threshold and uses the actual DeepQuark pentaquark ansatz, but the signal is still much shallower and noisier than the paper's -3 MeV result. It is kept in `scoring/scores.json` as an honest partial secondary attempt, not used to advance the milestone.
 
+DeepQuark `ccqqc` Pccbar continuation from job `22c16544-0a2`:
+
+- continued final-stage VMC from checkpoint 9 through checkpoints 10-19 at learning rate 0.001
+- best evaluated energy after the job: 5717.55 MeV
+- best binding: -0.45 MeV against the 5718 MeV threshold
+- Monte Carlo error: 0.47 MeV
+- parameter count: 2881
+- color proportions: 0.218 antitriplet-antitriplet-antitriplet, 0.780 antitriplet-sextet-antitriplet, 0.001 sextet-antitriplet-antitriplet
+
+The continuation executed correctly but did not improve the secondary claim: new checkpoints moved to substantially higher energies and the evaluator still selected an earlier checkpoint. The next job branches from stable checkpoint 8 with learning rate 0.0001 and writes checkpoints 20-29, leaving the degraded 10-19 series intact for auditability.
+
 Earlier smoke-test DeepQuark `ccqq` result:
 
 - energy: 2991.15 MeV
@@ -68,6 +79,7 @@ This is not physically plausible for the AL1 Tcc target and is treated only as a
 ## Remaining
 
 - Continue Pccbar final-stage VMC optimization from the existing checkpoint and reevaluate the extended checkpoint series to try to reach the paper's -3 MeV binding regime.
+- Retry Pccbar final-stage VMC from a stable earlier checkpoint with a smaller step size; the direct checkpoint-9 continuation at learning rate 0.001 degraded the variational energy.
 - Add bottom pentaquark `bbqqb` and other table entries to move beyond `core_claim_plus` toward `secondary_claims` or `majority`.
 
 ## Issues
@@ -78,6 +90,7 @@ This is not physically plausible for the AL1 Tcc target and is treated only as a
 - The second Pccbar job failed in `multiquark/eval.py` because all systems were sliced as if color had two discrete degrees. The evaluator now uses `dof_color` from `hi_op_.py`, preserving the two-color tetraquark split and enabling the three-color pentaquark basis.
 - The third Pccbar job failed because spin-5/2 has a one-component spin basis and `spin_proportions` returns a scalar. The evaluator now formats scalar spin proportions correctly, the RMS helper uses `_nparticles`, and the resume job skips RMS expectations because they are not scored.
 - The attempted Pccbar artifact reported 2881 parameters while the reference metadata records 2921 from the paper table. The evaluator preserves actual counts from `parameters.json`; future agents should keep architecture constraints fixed unless they intentionally change and document the pentaquark ansatz.
+- The checkpoint-9 Pccbar continuation at learning rate 0.001 diverged from the shallow bound-state region. `continue_train3.py` now supports `DQ_RESUME_FROM` and `DQ_RESUME_START_INDEX` so follow-up jobs can branch from a selected stable checkpoint without overwriting prior artifacts.
 
 ## Deviations from Paper
 

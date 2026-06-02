@@ -5,4 +5,4 @@ action: submit
 gpus: 1
 test: true
 milestone: core_claim_plus
-notes: "Continue the actual DeepQuark Pccbar final-stage VMC optimization for 10 more Train3 blocks from checkpoint 9, then evaluate checkpoints 0-19 with two repeats and rescore."
+notes: "Retry the actual DeepQuark Pccbar final-stage VMC from stable checkpoint 8 with lr 1e-4, write checkpoints 20-29, evaluate checkpoints 0-29, and rescore."
