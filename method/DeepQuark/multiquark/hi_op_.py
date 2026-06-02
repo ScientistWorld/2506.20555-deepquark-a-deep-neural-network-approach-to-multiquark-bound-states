@@ -657,7 +657,7 @@ def ms_radius(i, j, a, a_, r):
     """
 
     nd = 3
-    n_particles = 4
+    n_particles = _nparticles
     r = r.reshape(n_particles, nd)
     ri, rj = r[i], r[j]
     rij = jnp.linalg.norm(ri - rj, axis=-1) * 0.197  # unit:fm

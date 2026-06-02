@@ -12,6 +12,7 @@
 - GPU job `a48a1f9b-982` reproduced the Tbb AL1 tetraquark result with the same pipeline, extending the reproduction beyond the minimum.
 - GPU job `9acd5f17-604` completed the DeepQuark Pccbar training stages and wrote ten `Train3_*.mpack` checkpoints, but failed before evaluation/artifact copying because `scripts/method.sh` formatted fractional spin run directories incorrectly.
 - GPU job `528a9437-9d3` resumed the Pccbar run and reached `para_0` evaluation, but exposed an upstream pentaquark evaluator slicing bug: the code kept only two color labels although the pentaquark color basis has three.
+- GPU job `4111e39d-22c` passed the corrected pentaquark color split and then failed on scalar spin formatting for the one-component spin-5/2 basis.
 
 ## Results
 
@@ -55,6 +56,7 @@ This is not physically plausible for the AL1 Tcc target and is treated only as a
 - The smoke score is overbound by far more than the reference because the run was deliberately tiny; it remains documented only as an execution check.
 - The first Pccbar job failed after training because the script searched for `ccqqc(S=2.5_I=0)` instead of the upstream-formatted `ccqqc(S=2.5_I=0.0)`. `scripts/method.sh` now derives the run path from float formatting and supports `DQ_SKIP_TRAIN=1` plus `DQ_RUN_ID` to evaluate an existing run.
 - The second Pccbar job failed in `multiquark/eval.py` because all systems were sliced as if color had two discrete degrees. The evaluator now uses `dof_color` from `hi_op_.py`, preserving the two-color tetraquark split and enabling the three-color pentaquark basis.
+- The third Pccbar job failed because spin-5/2 has a one-component spin basis and `spin_proportions` returns a scalar. The evaluator now formats scalar spin proportions correctly, the RMS helper uses `_nparticles`, and the resume job skips RMS expectations because they are not scored.
 
 ## Deviations from Paper
 

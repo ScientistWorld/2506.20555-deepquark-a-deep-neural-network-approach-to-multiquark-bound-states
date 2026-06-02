@@ -45,11 +45,21 @@ def env_int(name, default):
     return int(os.environ.get(name, default))
 
 
+def single_spin_proportion(spin):
+    try:
+        return spin[0]
+    except TypeError:
+        return spin
+
+
 nchains = env_int("DQ_EVAL_NCHAINS", 2000)
 nsweep = env_int("DQ_EVAL_NSWEEP", 100)
 nsample = env_int("DQ_EVAL_NSAMPLE", 4 * 10 ** 5)
 ndiscard = env_int("DQ_EVAL_NDISCARD", 1000)
+skip_rms = os.environ.get("DQ_EVAL_SKIP_RMS", "0") == "1"
 evaluation = {'nchains': nchains, 'nsweep': nsweep, 'nsample': nsample, 'ndiscard': ndiscard, 'sigma': sigma * 0.197}
+if skip_rms:
+    evaluation['skip_rms'] = True
 sa = nk.sampler.MetropolisSampler(hi, GaussianFlipRule(hi_dis=hi_dis, sigma=sigma), n_chains=nchains,
                                   sweep_size=nsweep)
 eval_vs = nk.vqs.MCState(sa, model, n_samples=nsample, n_discard_per_chain=ndiscard, chunk_size=max(1, nsample // 4))
@@ -82,7 +92,7 @@ for i in irange:
             elif S == 1:
                 spinresult = f"0*1:{spin[0]:.3f},1*0:{spin[1]:.3f},1*1:{spin[2]:.3f}"
             else:
-                spinresult = f"1*1:{spin[0]:.3f}"
+                spinresult = f"1*1:{single_spin_proportion(spin):.3f}"
         elif _nparticles == 5:
             colorresult = f"3*3:{color[0]:.3f},3*6:{color[1]:.3f},6*3:{color[2]:.3f}"
             if S == 1 / 2:
@@ -90,14 +100,15 @@ for i in irange:
             elif S == 3 / 2:
                 spinresult = f"0*1->1:{spin[0]:.3f},1*0->1:{spin[1]:.3f},1*1->1:{spin[2]:.3f},1*1->2:{spin[3]:.3f}"
             else:
-                spinresult = f"1*1->2:{spin[0]:.3f}"
+                spinresult = f"1*1->2:{single_spin_proportion(spin):.3f}"
 
         rmsresult = ""
-        for l in range(_nparticles - 1):
-            for q in range(l + 1, _nparticles):
-                ms = MultiPotentialEnergy(hi, hi_dis, lambda a, a_, r: ms_radius(l, q, a, a_, r))
-                rij2 = eval_vs.expect(ms)
-                rmsresult += f"r{l + 1}{q + 1}: {jax.numpy.sqrt(rij2.mean.real):.3f} "
+        if not skip_rms:
+            for l in range(_nparticles - 1):
+                for q in range(l + 1, _nparticles):
+                    ms = MultiPotentialEnergy(hi, hi_dis, lambda a, a_, r: ms_radius(l, q, a, a_, r))
+                    rij2 = eval_vs.expect(ms)
+                    rmsresult += f"r{l + 1}{q + 1}: {jax.numpy.sqrt(rij2.mean.real):.3f} "
 
         results[i][_ + 1] = {'Emean': f"{float(e.mean.real):.5f}", 'Evar': f"{float(e.variance):.5f}",
                              'Esigma': f"{float(e.error_of_mean):.5f}", 'ERhat': f"{float(e.R_hat):.3f}",

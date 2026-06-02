@@ -34,5 +34,6 @@ export DQ_EVAL_NSWEEP=100
 export DQ_EVAL_NSAMPLE=100000
 export DQ_EVAL_NDISCARD=1000
 export DQ_EVAL_REPEATS=1
+export DQ_EVAL_SKIP_RMS=1
 
 bash scripts/reproduce.sh

@@ -35,5 +35,10 @@
 - Evaluation failed at `para_0` because upstream pentaquark color samples were sliced with two labels instead of the three-label pentaquark color basis.
 - Patched `multiquark/eval.py` to split color and spin samples using `dof_color`, then resubmitted a shorter evaluation over the first three final-stage checkpoints.
 
+### [2026-06-02 17:23] - core_claim_plus
+- GPU job `4111e39d-22c` passed the corrected pentaquark color split and failed next on spin-5/2 scalar spin reporting.
+- Patched scalar spin formatting, fixed the RMS helper to reshape coordinates with `_nparticles`, and enabled RMS skipping for this scored resume run.
+- Resubmitting the same three trained Pccbar checkpoints for energy/color scoring.
+
 ## Stop Justification
 - Not stopped. A pentaquark run is being submitted to cover a secondary DeepQuark claim.
