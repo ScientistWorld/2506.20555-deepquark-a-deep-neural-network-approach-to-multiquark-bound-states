@@ -39,28 +39,6 @@
           "color_6bar6": 0.032
         }
       }
-    },
-    "pcc_al1_binding": {
-      "results": {
-        "threshold_baseline": {
-          "energy_mev": 5718.0,
-          "binding_mev": 0.0,
-          "mc_error_mev": 0.0,
-          "parameter_count": 0.0,
-          "color_3bar3": 0.0,
-          "color_3bar6": 0.0,
-          "color_6bar3": 0.0
-        },
-        "deepquark": {
-          "energy_mev": 5717.17,
-          "binding_mev": -0.8299999999999272,
-          "mc_error_mev": 0.21000000000000002,
-          "parameter_count": 2881.0,
-          "color_3bar3": 0.224,
-          "color_3bar6": 0.775,
-          "color_6bar3": 0.001
-        }
-      }
     }
   }
 }

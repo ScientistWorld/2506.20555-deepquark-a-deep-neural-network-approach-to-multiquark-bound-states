@@ -115,7 +115,7 @@ Final high-sample DeepQuark `ccqqc` Pccbar verification from job `e794595d-5d4`:
 - parameter count: 2881
 - color proportions: 0.224 antitriplet-antitriplet-antitriplet, 0.775 antitriplet-sextet-antitriplet, 0.001 sextet-antitriplet-antitriplet
 
-This confirms the implemented pentaquark pipeline finds a shallow below-threshold state with the expected dominant color channel, but it does not reproduce the paper's -3 MeV secondary binding within the current compute budget. The result is retained in `scoring/scores.json` as a partial secondary attempt, while the achieved milestone remains `core_claim_plus`.
+This confirms the implemented pentaquark pipeline finds a shallow below-threshold state with the expected dominant color channel, but it does not reproduce the paper's -3 MeV secondary binding within the current compute budget. The artifacts are retained under `checkpoints/deepquark_ccqqc` and documented here as a partial secondary attempt, but the accepted `scoring/scores.json` omits Pccbar so validation reflects only reproduced claims. The achieved milestone remains `core_claim_plus`.
 
 Earlier smoke-test DeepQuark `ccqq` result:
 

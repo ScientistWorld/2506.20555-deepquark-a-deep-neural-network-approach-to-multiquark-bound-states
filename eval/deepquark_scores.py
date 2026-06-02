@@ -91,11 +91,22 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--artifacts", default="checkpoints", help="directory containing method artifacts")
     parser.add_argument("--output", default="scoring/scores.json")
+    parser.add_argument(
+        "--experiments",
+        default=",".join(EXPERIMENTS),
+        help="comma-separated experiment names to include in scores.json",
+    )
     args = parser.parse_args()
 
     artifact_root = Path(args.artifacts)
     scored = {"experiments": {}}
-    for exp_name, config in EXPERIMENTS.items():
+    requested = [name.strip() for name in args.experiments.split(",") if name.strip()]
+    unknown = sorted(set(requested) - set(EXPERIMENTS))
+    if unknown:
+        raise ValueError(f"Unknown experiment(s): {', '.join(unknown)}")
+
+    for exp_name in requested:
+        config = EXPERIMENTS[exp_name]
         baseline = {
             "energy_mev": config["threshold_mev"],
             "binding_mev": 0.0,

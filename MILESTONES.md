@@ -38,4 +38,4 @@
 ### [2026-06-02 19:58] - core_claim_plus
 - Job `e794595d-5d4` completed high-sample Pccbar verification over Train3_25, Train3_27, and Train3_43.
 - Final Pccbar score is -0.83 MeV binding with 0.21 MeV Monte Carlo error, below threshold but too shallow for the paper's -3 MeV secondary claim.
-- Reproduction is packaged and validated at `core_claim_plus`; higher milestones require stronger Pccbar optimization or additional table entries.
+- Reproduction is packaged and validated at `core_claim_plus`; the accepted score set omits the partial Pccbar result, and higher milestones require stronger Pccbar optimization or additional table entries.

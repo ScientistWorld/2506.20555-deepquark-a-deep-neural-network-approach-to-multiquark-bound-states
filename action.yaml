@@ -3,4 +3,4 @@
 # only after your turn ends. Sleeping blocks the entire pipeline.
 action: done
 milestone: core_claim_plus
-notes: "Core Tcc and additional Tbb DeepQuark AL1 claims are reproduced and packaged. Pccbar was implemented and evaluated as a partial secondary attempt but did not reach the paper's -3 MeV binding."
+notes: "Core Tcc and additional Tbb DeepQuark AL1 claims are reproduced and packaged. Pccbar artifacts are documented as a partial secondary attempt and omitted from accepted scores because they did not reach the paper's -3 MeV binding."
