@@ -3,5 +3,6 @@
   "nsweep": 100,
   "nsample": 100000,
   "ndiscard": 1000,
-  "sigma": 0.01
+  "sigma": 0.01,
+  "skip_rms": true
 }
