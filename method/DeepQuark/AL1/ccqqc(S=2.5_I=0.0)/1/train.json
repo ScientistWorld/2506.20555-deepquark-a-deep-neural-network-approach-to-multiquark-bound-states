@@ -42,15 +42,16 @@
     "sigma": 0.01
   },
   "Train3_continued": {
-    "from_checkpoint": 9,
-    "first_new_checkpoint": 10,
+    "from_checkpoint": 8,
+    "max_existing_checkpoint_before_resume": 19,
+    "first_new_checkpoint": 20,
     "blocks": 10,
     "n_iter": 50,
     "nchains": 2000,
     "nsweep": 20,
     "nsample": 20000,
     "ndiscard": 200,
-    "lr": 0.001,
+    "lr": 0.0001,
     "sigma": 0.01
   }
 }
