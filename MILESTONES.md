@@ -23,4 +23,4 @@
 - Removed generated DeepQuark run outputs from the tracked source tree and ignored future `method/DeepQuark/AL1/` outputs.
 
 ## Stop Justification
-- Completed at milestone `core_claim_plus`. The reusable environment validates and scores the reproduced Tcc and Tbb claims; Pccbar is documented as a partial optional target for future improvement.
+- Completed at milestone `core_claim_plus`.
