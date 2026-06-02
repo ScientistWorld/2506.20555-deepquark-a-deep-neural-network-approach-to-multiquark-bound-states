@@ -47,6 +47,16 @@ Attempted DeepQuark `ccqqc` Pccbar result from job `a03cd353-981`:
 
 Paper reference: 5715 MeV total energy and -3 MeV binding. This scaled run is below threshold but too shallow for the validator's paper-consistency check, so it is documented as an attempted secondary result and omitted from `scoring/scores.json`.
 
+Follow-up DeepQuark `ccqqc` Pccbar evaluation from job `e3faa567-af8`:
+
+- energy: 5717.22 MeV
+- binding: -0.78 MeV against the 5718 MeV threshold
+- Monte Carlo error: 0.59 MeV
+- parameter count: 2881
+- color proportions: 0.218 antitriplet-antitriplet-antitriplet, 0.781 antitriplet-sextet-antitriplet, 0.001 sextet-antitriplet-antitriplet
+
+This is below threshold and uses the actual DeepQuark pentaquark ansatz, but the signal is still much shallower and noisier than the paper's -3 MeV result. It is kept in `scoring/scores.json` as an honest partial secondary attempt, not used to advance the milestone.
+
 Earlier smoke-test DeepQuark `ccqq` result:
 
 - energy: 2991.15 MeV
@@ -57,8 +67,7 @@ This is not physically plausible for the AL1 Tcc target and is treated only as a
 
 ## Remaining
 
-- Submitted an evaluation-only Pccbar follow-up to score all ten existing `Train3_*.mpack` checkpoints with two repeats, aiming to improve the shallow pentaquark binding estimate before deciding whether longer training is needed.
-- Improve the Pccbar run toward the paper's -3 MeV binding by evaluating more checkpoints/repeats or training longer, then restore its method score in `scoring/scores.json`.
+- Continue Pccbar final-stage VMC optimization from the existing checkpoint and reevaluate the extended checkpoint series to try to reach the paper's -3 MeV binding regime.
 - Add bottom pentaquark `bbqqb` and other table entries to move beyond `core_claim_plus` toward `secondary_claims` or `majority`.
 
 ## Issues

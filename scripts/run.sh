@@ -6,6 +6,7 @@ cd /home/user
 export JAX_PLATFORM_NAME="${JAX_PLATFORM_NAME:-gpu}"
 export XLA_PYTHON_CLIENT_PREALLOCATE=false
 
+export DQ_POTENTIAL=AL1
 export DQ_QUARKS=ccqqc
 export DQ_SPIN=2.5
 export DQ_ISOSPIN=0
@@ -28,12 +29,18 @@ export DQ_CHECK_NDISCARD=500
 export DQ_CHECK_REPEATS=2
 export DQ_VARIANCE_TARGET=0.002
 export DQ_TRAIN3_ITERS=50
+export DQ_RESUME_TRAIN3_BLOCKS=10
+export DQ_RESUME_TRAIN3_ITERS=50
+export DQ_RESUME_LR=0.001
 export DQ_EVAL_NCHAINS=2000
 export DQ_EVAL_NSWEEP=100
 export DQ_EVAL_NSAMPLE=100000
 export DQ_EVAL_NDISCARD=1000
-export DQ_TRAIN3_BLOCKS=10
+export DQ_TRAIN3_BLOCKS=20
 export DQ_EVAL_REPEATS=2
 export DQ_EVAL_SKIP_RMS=1
 
+cd /home/user/method/DeepQuark
+python multiquark/continue_train3.py "$DQ_POTENTIAL" "$DQ_QUARKS" "$DQ_SPIN" "$DQ_ISOSPIN" --n "$DQ_RUN_ID"
+cd /home/user
 bash scripts/reproduce.sh
