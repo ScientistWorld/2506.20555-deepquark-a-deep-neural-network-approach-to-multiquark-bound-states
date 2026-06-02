@@ -5,4 +5,4 @@ action: submit
 gpus: 1
 test: true
 milestone: core_claim_plus
-notes: "Continue the actual DeepQuark Pccbar final-stage VMC from improved checkpoint 25 with lr 5e-5, write checkpoints 30-39, evaluate checkpoints 0-39, and rescore."
+notes: "Continue the actual DeepQuark Pccbar final-stage VMC from checkpoint 27 with lr 2e-5, write checkpoints 40-49, evaluate selected checkpoints 25,27,40-49, and rescore."

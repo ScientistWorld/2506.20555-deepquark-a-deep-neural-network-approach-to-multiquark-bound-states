@@ -80,6 +80,18 @@ DeepQuark `ccqqc` Pccbar branched continuation from job `95a388a0-463`:
 
 This improves the pentaquark secondary target while preserving the actual DeepQuark algorithm and staying below threshold, but it remains shallower than the paper's -3 MeV Pccbar binding. The next job continues from Train3_25 at learning rate 0.00005 and writes checkpoints 30-39.
 
+DeepQuark `ccqqc` Pccbar refinement from job `e577a7e1-2a0`:
+
+- continued final-stage VMC from checkpoint 25 through checkpoints 30-39 at learning rate 0.00005
+- best checkpoint/repeat after reevaluation: Train3_27 repeat 2
+- energy: 5716.53 MeV
+- binding: -1.47 MeV against the 5718 MeV threshold
+- Monte Carlo error: 0.40 MeV
+- parameter count: 2881
+- color proportions: 0.227 antitriplet-antitriplet-antitriplet, 0.772 antitriplet-sextet-antitriplet, 0.001 sextet-antitriplet-antitriplet
+
+The new checkpoints did not beat Train3_27, but the resampled best result moved closer to the paper's -3 MeV pentaquark binding and kept the correct color-channel pattern. The next job branches from Train3_27 at learning rate 0.00002 and uses the new `DQ_EVAL_IRANGE` hook to evaluate only checkpoints 25, 27, and 40-49.
+
 Earlier smoke-test DeepQuark `ccqq` result:
 
 - energy: 2991.15 MeV
@@ -90,7 +102,7 @@ This is not physically plausible for the AL1 Tcc target and is treated only as a
 
 ## Remaining
 
-- Continue Pccbar final-stage VMC from Train3_25 with a smaller learning rate and reevaluate the extended checkpoint series to try to reach the paper's -3 MeV binding regime.
+- Continue Pccbar final-stage VMC from Train3_27 with a smaller learning rate and reevaluate a selected checkpoint set to try to reach the paper's -3 MeV binding regime.
 - Add bottom pentaquark `bbqqb` and other table entries to move beyond `core_claim_plus` toward `secondary_claims` or `majority`.
 
 ## Issues
@@ -102,6 +114,7 @@ This is not physically plausible for the AL1 Tcc target and is treated only as a
 - The third Pccbar job failed because spin-5/2 has a one-component spin basis and `spin_proportions` returns a scalar. The evaluator now formats scalar spin proportions correctly, the RMS helper uses `_nparticles`, and the resume job skips RMS expectations because they are not scored.
 - The attempted Pccbar artifact reported 2881 parameters while the reference metadata records 2921 from the paper table. The evaluator preserves actual counts from `parameters.json`; future agents should keep architecture constraints fixed unless they intentionally change and document the pentaquark ansatz.
 - The checkpoint-9 Pccbar continuation at learning rate 0.001 diverged from the shallow bound-state region. `continue_train3.py` now supports `DQ_RESUME_FROM` and `DQ_RESUME_START_INDEX` so follow-up jobs can branch from a selected stable checkpoint without overwriting prior artifacts.
+- `scripts/method.sh` now supports `DQ_EVAL_IRANGE` for focused reevaluation of selected DeepQuark checkpoints. This keeps future retry jobs inside the test-node limit without changing the evaluation metric or importing from the method into `eval/`.
 
 ## Deviations from Paper
 

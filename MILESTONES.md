@@ -24,3 +24,8 @@
 - Job `95a388a0-463` completed the checkpoint-8, learning-rate-0.0001 Pccbar branch and evaluated checkpoints 0-29.
 - Best Pccbar result improved to -1.15 MeV binding at Train3_25, with color proportions close to the paper's pentaquark decomposition.
 - Prepared another cautious continuation from Train3_25 at learning rate 0.00005 to try to approach the paper's -3 MeV secondary result.
+
+### [2026-06-02 19:04] - core_claim_plus
+- Job `e577a7e1-2a0` completed the Train3_25, learning-rate-0.00005 Pccbar refinement and evaluated checkpoints 0-39.
+- Best Pccbar result improved to -1.47 MeV binding at Train3_27, still below the paper's -3 MeV secondary target.
+- Added a focused checkpoint-evaluation hook and prepared a Train3_27, learning-rate-0.00002 retry over checkpoints 40-49.

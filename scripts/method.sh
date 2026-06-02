@@ -37,12 +37,16 @@ if [ -z "$RUN_ID" ] || [ ! -d "$RUN_PARENT/$RUN_ID" ]; then
   exit 1
 fi
 
-IRANGE_END="${DQ_TRAIN3_BLOCKS:-10}"
-IRANGE_END=$((IRANGE_END - 1))
-IRANGE="$(python - <<PY
+if [ -n "${DQ_EVAL_IRANGE:-}" ]; then
+  IRANGE="$DQ_EVAL_IRANGE"
+else
+  IRANGE_END="${DQ_TRAIN3_BLOCKS:-10}"
+  IRANGE_END=$((IRANGE_END - 1))
+  IRANGE="$(python - <<PY
 print(list(range($IRANGE_END + 1)))
 PY
 )"
+fi
 python multiquark/eval.py "$POTENTIAL" "$QUARKS" "$SPIN" "$ISOSPIN" --n "$RUN_ID" --irange "$IRANGE"
 
 DEST="/home/user/checkpoints/$ARTIFACT_NAME"
