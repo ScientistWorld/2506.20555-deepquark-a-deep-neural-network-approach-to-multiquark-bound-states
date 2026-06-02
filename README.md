@@ -161,4 +161,7 @@ The evaluator currently supports artifacts named `deepquark_ccqq`, `deepquark_bb
 
 # Reproduction Milestones
 
-**Current: core_claim_plus**
+**Current: core_claim**
+
+## Stop Justification
+- Completed at milestone `core_claim`.

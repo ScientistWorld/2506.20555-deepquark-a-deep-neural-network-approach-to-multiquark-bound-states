@@ -1,6 +1,8 @@
 # IMPORTANT: Once you set action to 'submit' or 'done', STOP immediately.
 # Do NOT sleep, poll, or wait for jobs. The system reads this file
 # only after your turn ends. Sleeping blocks the entire pipeline.
-action: done
-milestone: core_claim_plus
-notes: "Core Tcc and additional Tbb DeepQuark AL1 claims are reproduced and packaged. Pccbar artifacts are documented as a partial secondary attempt and omitted from accepted scores because they did not reach the paper's -3 MeV binding."
+action: pending
+gpus: 1
+test: false
+milestone: core_claim
+notes: ""
