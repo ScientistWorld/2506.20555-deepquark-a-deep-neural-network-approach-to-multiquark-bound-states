@@ -68,6 +68,18 @@ DeepQuark `ccqqc` Pccbar continuation from job `22c16544-0a2`:
 
 The continuation executed correctly but did not improve the secondary claim: new checkpoints moved to substantially higher energies and the evaluator still selected an earlier checkpoint. The next job branches from stable checkpoint 8 with learning rate 0.0001 and writes checkpoints 20-29, leaving the degraded 10-19 series intact for auditability.
 
+DeepQuark `ccqqc` Pccbar branched continuation from job `95a388a0-463`:
+
+- continued final-stage VMC from checkpoint 8 through checkpoints 20-29 at learning rate 0.0001
+- best checkpoint/repeat: Train3_25 repeat 1
+- energy: 5716.85 MeV
+- binding: -1.15 MeV against the 5718 MeV threshold
+- Monte Carlo error: 0.47 MeV
+- parameter count: 2881
+- color proportions: 0.223 antitriplet-antitriplet-antitriplet, 0.775 antitriplet-sextet-antitriplet, 0.001 sextet-antitriplet-antitriplet
+
+This improves the pentaquark secondary target while preserving the actual DeepQuark algorithm and staying below threshold, but it remains shallower than the paper's -3 MeV Pccbar binding. The next job continues from Train3_25 at learning rate 0.00005 and writes checkpoints 30-39.
+
 Earlier smoke-test DeepQuark `ccqq` result:
 
 - energy: 2991.15 MeV
@@ -78,8 +90,7 @@ This is not physically plausible for the AL1 Tcc target and is treated only as a
 
 ## Remaining
 
-- Continue Pccbar final-stage VMC optimization from the existing checkpoint and reevaluate the extended checkpoint series to try to reach the paper's -3 MeV binding regime.
-- Retry Pccbar final-stage VMC from a stable earlier checkpoint with a smaller step size; the direct checkpoint-9 continuation at learning rate 0.001 degraded the variational energy.
+- Continue Pccbar final-stage VMC from Train3_25 with a smaller learning rate and reevaluate the extended checkpoint series to try to reach the paper's -3 MeV binding regime.
 - Add bottom pentaquark `bbqqb` and other table entries to move beyond `core_claim_plus` toward `secondary_claims` or `majority`.
 
 ## Issues
