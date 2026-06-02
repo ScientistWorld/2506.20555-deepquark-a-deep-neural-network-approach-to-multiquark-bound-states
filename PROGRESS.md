@@ -9,6 +9,7 @@
 - GPU smoke job `e34f389c-e53` completed successfully and `python validate.py --compare` passed after method artifact scoring.
 - Reference/scoring metadata now matches the authors' actual parameter counts for the vendored `ccqq` configuration.
 - GPU job `a2bd95b6-2a9` reproduced the core Tcc AL1 binding claim with the actual DeepQuark VMC pipeline.
+- GPU job `a48a1f9b-982` reproduced the Tbb AL1 tetraquark result with the same pipeline, extending the reproduction beyond the minimum.
 
 ## Results
 
@@ -22,6 +23,16 @@ Core DeepQuark `ccqq` result from job `a2bd95b6-2a9`:
 
 Paper reference: 3863 MeV total energy and -15 MeV binding. This supports the central claim that DeepQuark finds a shallow bound AL1 Tcc state below threshold.
 
+Additional DeepQuark `bbqq` result from job `a48a1f9b-982`:
+
+- energy: 10490.65 MeV
+- binding: -153.35 MeV against the 10644 MeV threshold
+- Monte Carlo error: 0.19 MeV
+- parameter count: 1857
+- color proportions: 0.968 antitriplet-triplet, 0.032 sextet-antisextet
+
+Paper reference: 10491 MeV total energy and -153 MeV binding. This supports `core_claim_plus` by reproducing the compact Tbb tetraquark setting.
+
 Earlier smoke-test DeepQuark `ccqq` result:
 
 - energy: 2991.15 MeV
@@ -32,8 +43,8 @@ This is not physically plausible for the AL1 Tcc target and is treated only as a
 
 ## Remaining
 
-- Run `bbqq` with the same DeepQuark AL1 tetraquark protocol to test the heavier Tbb bound state.
-- If Tbb succeeds, add `ccqqc` for broader pentaquark coverage.
+- Run `ccqqc` with the DeepQuark AL1 pentaquark protocol to test the reported weakly bound Pccbar state.
+- If Pccbar succeeds, consider the bottom pentaquark `bbqqb` for additional secondary coverage.
 
 ## Issues
 
@@ -44,4 +55,5 @@ This is not physically plausible for the AL1 Tcc target and is treated only as a
 
 - Initial smoke job scaled down Monte Carlo chains, samples, and optimization iterations. The algorithm, Hamiltonian, symmetry projections, model family, and coupled-channel representation were unchanged. This smoke run supports `method_runs` only.
 - The successful Tcc job remains scale-reduced relative to the longest paper runs, but preserved the DeepQuark procedure and reached the reported shallow-binding regime.
-- The next Tbb job uses the same scaled sample/iteration schedule as the successful Tcc run.
+- The successful Tbb job used the same scaled sample/iteration schedule as the successful Tcc run.
+- The next Pccbar job keeps that schedule but switches to the authors' pentaquark architecture and spin-5/2 sector.

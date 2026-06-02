@@ -6,10 +6,10 @@ cd /home/user
 export JAX_PLATFORM_NAME="${JAX_PLATFORM_NAME:-gpu}"
 export XLA_PYTHON_CLIENT_PREALLOCATE=false
 
-export DQ_QUARKS=bbqq
-export DQ_SPIN=1
+export DQ_QUARKS=ccqqc
+export DQ_SPIN=2.5
 export DQ_ISOSPIN=0
-export DQ_ARTIFACT_NAME=deepquark_bbqq
+export DQ_ARTIFACT_NAME=deepquark_ccqqc
 
 export DQ_NCHAINS=2000
 export DQ_NSWEEP=20

@@ -1,5 +1,5 @@
 action: submit
 gpus: 1
 test: false
-milestone: core_claim
-notes: "Run the same scaled DeepQuark AL1 tetraquark protocol on bbqq to expand from the reproduced Tcc core claim toward core_claim_plus."
+milestone: core_claim_plus
+notes: "Run the AL1 ccqqc spin-5/2 DeepQuark pentaquark setting to cover the paper's secondary Pccbar weak-binding claim."
