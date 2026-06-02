@@ -46,4 +46,4 @@
 - Removed the under-reproduced Pccbar method score and kept `core_claim_plus` as the highest valid milestone.
 
 ## Stop Justification
-- Stopping at `core_claim_plus`. The reusable gym scores the core Tcc claim and an additional Tbb mass-regime setting with validation passing. Pccbar remains a documented open target because the scaled run did not meet the paper-consistency threshold.
+- Completed at milestone `secondary_claims`.
