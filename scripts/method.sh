@@ -9,13 +9,33 @@ SPIN="${DQ_SPIN:-1}"
 ISOSPIN="${DQ_ISOSPIN:-0}"
 ARTIFACT_NAME="${DQ_ARTIFACT_NAME:-deepquark_${QUARKS}}"
 
-python multiquark/train.py "$POTENTIAL" "$QUARKS" "$SPIN" "$ISOSPIN"
-
-RUN_PARENT="$POTENTIAL/${QUARKS}(S=${SPIN}.0_I=${ISOSPIN}.0)"
-if [ ! -d "$RUN_PARENT" ]; then
-  RUN_PARENT="$POTENTIAL/${QUARKS}(S=${SPIN}_I=${ISOSPIN})"
+if [ "${DQ_SKIP_TRAIN:-0}" != "1" ]; then
+  python multiquark/train.py "$POTENTIAL" "$QUARKS" "$SPIN" "$ISOSPIN"
+else
+  echo "Skipping training because DQ_SKIP_TRAIN=1"
 fi
-RUN_ID="$(find "$RUN_PARENT" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort -n | tail -1)"
+
+RUN_PARENT="$(python - "$POTENTIAL" "$QUARKS" "$SPIN" "$ISOSPIN" <<'PY'
+import sys
+
+potential, quarks, spin, isospin = sys.argv[1:]
+print(f"{potential}/{quarks}(S={float(spin)}_I={float(isospin)})")
+PY
+)"
+if [ ! -d "$RUN_PARENT" ]; then
+  echo "Expected DeepQuark run parent is missing: $RUN_PARENT" >&2
+  exit 1
+fi
+
+if [ -n "${DQ_RUN_ID:-}" ]; then
+  RUN_ID="$DQ_RUN_ID"
+else
+  RUN_ID="$(find "$RUN_PARENT" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort -n | tail -1)"
+fi
+if [ -z "$RUN_ID" ] || [ ! -d "$RUN_PARENT/$RUN_ID" ]; then
+  echo "Expected DeepQuark run directory is missing: $RUN_PARENT/$RUN_ID" >&2
+  exit 1
+fi
 
 IRANGE_END="${DQ_TRAIN3_BLOCKS:-10}"
 IRANGE_END=$((IRANGE_END - 1))

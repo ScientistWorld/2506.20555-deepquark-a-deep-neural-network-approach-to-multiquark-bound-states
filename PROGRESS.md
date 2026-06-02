@@ -10,6 +10,7 @@
 - Reference/scoring metadata now matches the authors' actual parameter counts for the vendored `ccqq` configuration.
 - GPU job `a2bd95b6-2a9` reproduced the core Tcc AL1 binding claim with the actual DeepQuark VMC pipeline.
 - GPU job `a48a1f9b-982` reproduced the Tbb AL1 tetraquark result with the same pipeline, extending the reproduction beyond the minimum.
+- GPU job `9acd5f17-604` completed the DeepQuark Pccbar training stages and wrote ten `Train3_*.mpack` checkpoints, but failed before evaluation/artifact copying because `scripts/method.sh` formatted fractional spin run directories incorrectly.
 
 ## Results
 
@@ -44,12 +45,14 @@ This is not physically plausible for the AL1 Tcc target and is treated only as a
 ## Remaining
 
 - Run `ccqqc` with the DeepQuark AL1 pentaquark protocol to test the reported weakly bound Pccbar state.
+- Resume the completed `ccqqc(S=2.5_I=0.0)/1` run with evaluation-only mode and score it through `scripts/evaluate.sh`.
 - If Pccbar succeeds, consider the bottom pentaquark `bbqqb` for additional secondary coverage.
 
 ## Issues
 
 - The upstream code requires JAX, Flax, and NetKet. The container setup worked on the smoke job.
 - The smoke score is overbound by far more than the reference because the run was deliberately tiny; it remains documented only as an execution check.
+- The first Pccbar job failed after training because the script searched for `ccqqc(S=2.5_I=0)` instead of the upstream-formatted `ccqqc(S=2.5_I=0.0)`. `scripts/method.sh` now derives the run path from float formatting and supports `DQ_SKIP_TRAIN=1` plus `DQ_RUN_ID` to evaluate an existing run.
 
 ## Deviations from Paper
 

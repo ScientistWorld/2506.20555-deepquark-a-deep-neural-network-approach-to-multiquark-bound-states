@@ -10,6 +10,8 @@ export DQ_QUARKS=ccqqc
 export DQ_SPIN=2.5
 export DQ_ISOSPIN=0
 export DQ_ARTIFACT_NAME=deepquark_ccqqc
+export DQ_SKIP_TRAIN=1
+export DQ_RUN_ID=1
 
 export DQ_NCHAINS=2000
 export DQ_NSWEEP=20

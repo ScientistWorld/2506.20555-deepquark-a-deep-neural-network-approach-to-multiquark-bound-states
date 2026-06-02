@@ -25,5 +25,10 @@
 - Reproduced the heavier tetraquark bound state: 10490.65 MeV total energy, -153.35 MeV binding against the 10644 MeV threshold, compared with the paper's -153 MeV.
 - Color proportions were also consistent with a compact Tbb state: 0.968 antitriplet-triplet and 0.032 sextet-antisextet.
 
+### [2026-06-02 17:17] - core_claim_plus
+- GPU job `9acd5f17-604` completed the scaled AL1 `ccqqc` Pccbar training stages and produced ten `Train3_*.mpack` checkpoints.
+- The job failed before evaluation because the wrapper script looked for the wrong fractional-spin run directory, so no Pccbar score was claimed.
+- Added resumable evaluation support and fixed run directory formatting before resubmitting evaluation of the existing Pccbar checkpoints.
+
 ## Stop Justification
 - Not stopped. A pentaquark run is being submitted to cover a secondary DeepQuark claim.
