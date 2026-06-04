@@ -5,5 +5,4 @@
 action: done
 gpus: 0
 test: false
-milestone: core_claim_plus
-notes: "Added train/test split evaluation harness over stored DeepQuark artifacts; validation passes and scores are produced later."
+notes: "Alternating-record train/test split over stored DeepQuark artifacts; 6 metrics per accepted tetraquark experiment in each slice; scripts written, scores produced later."

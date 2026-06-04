@@ -2,8 +2,8 @@
 """Held-out test-slice scorer for DeepQuark-style method artifacts.
 
 This evaluator reads artifacts from checkpoints/<method>_<system>/ and scores
-the complementary stored evaluation records to eval/train/evaluate.py. It does
-not import method code or rerun optimization/inference.
+the held-out half of the stored evaluation records. It does not import method
+code or rerun optimization/inference.
 """
 
 from __future__ import annotations
@@ -13,9 +13,11 @@ import json
 import math
 import re
 from pathlib import Path
+from typing import Any
 
 
 SLICE = "test"
+SLICE_INDEX = 1
 
 EXPERIMENTS = {
     "tcc_al1_binding": {
@@ -38,24 +40,21 @@ def _load_json(path: Path) -> dict:
         return json.load(handle)
 
 
-def _split_accepts(checkpoint_key: str, repeat_key: str) -> bool:
-    token = f"{checkpoint_key}:{repeat_key}"
-    return sum(ord(char) for char in token) % 2 != 0
-
-
-def _best_eval(results: dict) -> dict:
-    selected = []
-    fallback = []
+def _evaluation_records(results: dict) -> list[tuple[str, str, dict[str, Any]]]:
+    records = []
     for checkpoint_key, checkpoint_result in sorted(results.items(), key=lambda item: str(item[0])):
         if not isinstance(checkpoint_result, dict):
             continue
         for repeat_key, repeated_eval in sorted(checkpoint_result.items(), key=lambda item: str(item[0])):
-            if not isinstance(repeated_eval, dict) or "Emean" not in repeated_eval:
-                continue
-            fallback.append(repeated_eval)
-            if _split_accepts(str(checkpoint_key), str(repeat_key)):
-                selected.append(repeated_eval)
-    candidates = selected or fallback
+            if isinstance(repeated_eval, dict) and "Emean" in repeated_eval:
+                records.append((str(checkpoint_key), str(repeat_key), repeated_eval))
+    return records
+
+
+def _best_eval(results: dict) -> dict:
+    records = _evaluation_records(results)
+    candidates = [record for idx, (_, _, record) in enumerate(records) if idx % 2 == SLICE_INDEX]
+    candidates = candidates or [record for _, _, record in records]
     if not candidates:
         raise ValueError("No evaluation records with Emean were found")
     return min(candidates, key=lambda record: float(record["Emean"]))
@@ -74,6 +73,8 @@ def _method_dirs(artifact_root: Path, suffix: str) -> dict[str, Path]:
         if not artifact_dir.is_dir():
             continue
         if not (artifact_dir / "results.json").exists():
+            continue
+        if not (artifact_dir / "parameters.json").exists():
             continue
         method_name = artifact_dir.name[: -(len(suffix) + 1)]
         if method_name:
