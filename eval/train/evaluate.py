@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Train-slice scorer for DeepQuark-style method artifacts.
+"""Train-slice scorer for multiquark bound-state method artifacts.
 
 This evaluator reads artifacts from checkpoints/<method>_<system>/ and scores
 one half of the stored evaluation records. It does not import method code or

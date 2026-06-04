@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Score DeepQuark-style artifacts without importing method code."""
+"""Score multiquark bound-state artifacts without importing method code."""
 
 from __future__ import annotations
 
@@ -12,22 +12,19 @@ from pathlib import Path
 
 EXPERIMENTS = {
     "tcc_al1_binding": {
-        "artifact": "deepquark_ccqq",
-        "method": "deepquark",
+        "suffix": "ccqq",
         "threshold_mev": 1862.0 + 2016.0,
         "expected_params": 1857,
         "color_keys": ("color_3bar3", "color_6bar6"),
     },
     "tbb_al1_binding": {
-        "artifact": "deepquark_bbqq",
-        "method": "deepquark",
+        "suffix": "bbqq",
         "threshold_mev": 5294.0 + 5350.0,
         "expected_params": 1857,
         "color_keys": ("color_3bar3", "color_6bar6"),
     },
     "pcc_al1_binding": {
-        "artifact": "deepquark_ccqqc",
-        "method": "deepquark",
+        "suffix": "ccqqc",
         "threshold_mev": 2016.0 + 3702.0,
         "expected_params": 2921,
         "color_keys": ("color_3bar3", "color_3bar6", "color_6bar3"),
@@ -63,6 +60,33 @@ def _parse_color(text: str, nkeys: int) -> list[float]:
     if len(values) < nkeys:
         values.extend([math.nan] * (nkeys - len(values)))
     return values[:nkeys]
+
+
+def _method_dirs(artifact_root: Path, suffix: str) -> dict[str, Path]:
+    methods = {}
+    for artifact_dir in sorted(artifact_root.glob(f"*_{suffix}")):
+        if not artifact_dir.is_dir():
+            continue
+        if not (artifact_dir / "results.json").exists():
+            continue
+        if not (artifact_dir / "parameters.json").exists():
+            continue
+        method_name = artifact_dir.name[: -(len(suffix) + 1)]
+        if method_name:
+            methods[method_name] = artifact_dir
+    return methods
+
+
+def _baseline(config: dict) -> dict:
+    scores = {
+        "energy_mev": config["threshold_mev"],
+        "binding_mev": 0.0,
+        "mc_error_mev": 0.0,
+        "parameter_count": 0.0,
+    }
+    for key in config["color_keys"]:
+        scores[key] = 0.0
+    return scores
 
 
 def score_artifact(artifact_dir: Path, exp_name: str) -> dict:
@@ -107,20 +131,10 @@ def main() -> None:
 
     for exp_name in requested:
         config = EXPERIMENTS[exp_name]
-        baseline = {
-            "energy_mev": config["threshold_mev"],
-            "binding_mev": 0.0,
-            "mc_error_mev": 0.0,
-            "parameter_count": 0.0,
-        }
-        for key in config["color_keys"]:
-            baseline[key] = 0.0
-        scored["experiments"][exp_name] = {"results": {"threshold_baseline": baseline}}
-
-        artifact_dir = artifact_root / config["artifact"]
-        if not (artifact_dir / "results.json").exists():
-            continue
-        scored["experiments"][exp_name]["results"][config["method"]] = score_artifact(artifact_dir, exp_name)
+        results = {"threshold_baseline": _baseline(config)}
+        for method_name, artifact_dir in _method_dirs(artifact_root, config["suffix"]).items():
+            results[method_name] = score_artifact(artifact_dir, exp_name)
+        scored["experiments"][exp_name] = {"results": results}
 
     output_path = Path(args.output)
     output_path.parent.mkdir(parents=True, exist_ok=True)

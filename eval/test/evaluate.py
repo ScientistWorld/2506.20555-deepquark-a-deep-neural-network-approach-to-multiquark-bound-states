@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Held-out test-slice scorer for DeepQuark-style method artifacts.
+"""Held-out test-slice scorer for multiquark bound-state method artifacts.
 
 This evaluator reads artifacts from checkpoints/<method>_<system>/ and scores
 the held-out half of the stored evaluation records. It does not import method

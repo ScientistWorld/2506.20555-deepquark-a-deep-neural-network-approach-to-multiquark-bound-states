@@ -22,5 +22,10 @@
 - Fixed `scripts/reproduce.sh` so a fresh run regenerates both accepted Tcc and Tbb artifacts before scoring them.
 - Removed generated DeepQuark run outputs from the tracked source tree and ignored future `method/DeepQuark/AL1/` outputs.
 
+### [2026-06-04 07:02] - core_claim_plus
+- Final verification confirmed the claimed milestone remains justified.
+- Generalized the main evaluator to score any `checkpoints/<method>_<system>` artifact for the accepted systems.
+- Re-ran the accepted, train-slice, and test-slice evaluators; validation passed.
+
 ## Stop Justification
 - Completed at milestone `core_claim_plus`.

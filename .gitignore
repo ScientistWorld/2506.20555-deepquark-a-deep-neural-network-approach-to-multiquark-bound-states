@@ -71,6 +71,7 @@ trajectory/
 outputs/
 logs/
 method/DeepQuark/AL1/
+.nv/
 .venv/
 venv/
 env/

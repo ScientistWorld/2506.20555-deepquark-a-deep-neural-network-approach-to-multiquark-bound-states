@@ -6,4 +6,4 @@ action: done
 gpus: 0
 test: false
 milestone: core_claim_plus
-notes: "Added missing split-mode score artifacts; validation now passes."
+notes: "Final verification passed; evaluator generalized and core_claim_plus remains justified."

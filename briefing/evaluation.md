@@ -10,11 +10,11 @@ Run:
 bash scripts/evaluate.sh
 ```
 
-The standard method artifact format is a directory under `checkpoints/` containing:
+The standard method artifact format is a directory under `checkpoints/` named `<method>_<system>`, where `<system>` is one of `ccqq`, `bbqq`, or `ccqqc`. Each artifact directory contains:
 
 - `parameters.json`
 - `train.json`
 - `eval.json`
 - `results.json`
 
-The evaluator currently supports artifacts named `deepquark_ccqq`, `deepquark_bbqq`, and `deepquark_ccqqc`.
+The method name is inferred from the artifact directory prefix. For example, `checkpoints/my_solver_ccqq` is scored as method `my_solver` on the `tcc_al1_binding` experiment.
