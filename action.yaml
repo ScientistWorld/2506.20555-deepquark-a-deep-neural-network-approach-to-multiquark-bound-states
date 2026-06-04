@@ -2,7 +2,8 @@
 # Once you set action to 'done', STOP immediately.
 # Do NOT sleep, poll, or wait. The system reads this file
 # only after your turn ends.
-action: done
+action: pending
 gpus: 0
 test: false
-notes: "Alternating-record train/test split over stored DeepQuark artifacts; 6 metrics per accepted tetraquark experiment in each slice; scripts written, scores produced later."
+milestone: core_claim_plus
+notes: ""
