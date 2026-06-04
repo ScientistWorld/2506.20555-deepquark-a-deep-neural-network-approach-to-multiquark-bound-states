@@ -24,6 +24,3 @@
 
 ## Stop Justification
 - Completed at milestone `core_claim_plus`.
-- The accepted score set reproduces the paper's core AL1 Tcc tetraquark binding claim and one additional AL1 Tbb tetraquark setting with the authors' actual DeepQuark NN-VMC implementation.
-- I am stopping before `secondary_claims` because the implemented Pccbar pentaquark pipeline ran end-to-end but stabilized at about -0.83 MeV binding, which is below threshold but not close enough to the paper's reported -3 MeV secondary claim to count as reproduced.
-- The reusable evaluator is artifact-based and currently scores the two accepted experiments in `scoring/scores.json`; the pentaquark artifacts remain documented as a partial attempt for future work rather than being included in the final accepted scores.
