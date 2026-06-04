@@ -6,4 +6,4 @@ action: done
 gpus: 0
 test: false
 milestone: core_claim_plus
-notes: "Audited fresh-clone packaging paths; no external pre-existing artifacts are required."
+notes: "Added missing split-mode score artifacts; validation now passes."
