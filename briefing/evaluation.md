@@ -10,7 +10,7 @@ Run:
 bash scripts/evaluate.sh
 ```
 
-The standard method artifact format is a directory under `checkpoints/` named `<method>_<system>`, where `<system>` is one of `ccqq`, `bbqq`, or `ccqqc`. Each artifact directory contains:
+The standard method artifact format is a directory under `checkpoints/` named `<method>_<system>`, where the accepted scored systems are `ccqq` and `bbqq`. Each artifact directory contains:
 
 - `parameters.json`
 - `train.json`

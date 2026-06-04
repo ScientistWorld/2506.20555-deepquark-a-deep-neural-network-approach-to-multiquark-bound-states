@@ -9,8 +9,8 @@
         "binding_mev": {"higher_is_better": false, "coefficient": -1.0, "description": "Energy relative to the fixed two-meson threshold; more negative means stronger binding."},
         "mc_error_mev": {"higher_is_better": false, "coefficient": -0.2, "description": "Monte Carlo standard error of the estimated energy in MeV."},
         "parameter_count": {"higher_is_better": false, "coefficient": -0.2, "description": "Number of trainable ansatz parameters used for the scored artifact."},
-        "color_3bar3": {"higher_is_better": true, "coefficient": 0.1, "description": "Reported antitriplet-triplet color-channel proportion for the tetraquark state."},
-        "color_6bar6": {"higher_is_better": true, "coefficient": 0.1, "description": "Reported sextet-antisextet color-channel proportion for the tetraquark state."}
+        "color_3bar3": {"higher_is_better": true, "coefficient": 0.0, "description": "Reported antitriplet-triplet color-channel proportion for the tetraquark state; recorded as a diagnostic, not an optimization target."},
+        "color_6bar6": {"higher_is_better": true, "coefficient": 0.0, "description": "Reported sextet-antisextet color-channel proportion for the tetraquark state; recorded as a diagnostic, not an optimization target."}
       },
       "results": {
         "threshold_baseline": {
@@ -51,8 +51,8 @@
         "binding_mev": {"higher_is_better": false, "coefficient": -1.0, "description": "Energy relative to the fixed two-meson threshold; more negative means stronger binding."},
         "mc_error_mev": {"higher_is_better": false, "coefficient": -0.2, "description": "Monte Carlo standard error of the estimated energy in MeV."},
         "parameter_count": {"higher_is_better": false, "coefficient": -0.2, "description": "Number of trainable ansatz parameters used for the scored artifact."},
-        "color_3bar3": {"higher_is_better": true, "coefficient": 0.1, "description": "Reported antitriplet-triplet color-channel proportion for the tetraquark state."},
-        "color_6bar6": {"higher_is_better": true, "coefficient": 0.1, "description": "Reported sextet-antisextet color-channel proportion for the tetraquark state."}
+        "color_3bar3": {"higher_is_better": true, "coefficient": 0.0, "description": "Reported antitriplet-triplet color-channel proportion for the tetraquark state; recorded as a diagnostic, not an optimization target."},
+        "color_6bar6": {"higher_is_better": true, "coefficient": 0.0, "description": "Reported sextet-antisextet color-channel proportion for the tetraquark state; recorded as a diagnostic, not an optimization target."}
       },
       "results": {
         "threshold_baseline": {
@@ -93,9 +93,9 @@
         "binding_mev": {"higher_is_better": false, "coefficient": -1.0, "description": "Energy relative to the fixed baryon-meson threshold; more negative means stronger binding."},
         "mc_error_mev": {"higher_is_better": false, "coefficient": -0.2, "description": "Monte Carlo standard error of the estimated energy in MeV."},
         "parameter_count": {"higher_is_better": false, "coefficient": -0.2, "description": "Number of trainable ansatz parameters used for the scored artifact."},
-        "color_3bar3": {"higher_is_better": true, "coefficient": 0.1, "description": "Reported antitriplet-antitriplet-antitriplet color-channel proportion for the pentaquark state."},
-        "color_3bar6": {"higher_is_better": true, "coefficient": 0.1, "description": "Reported antitriplet-sextet-antitriplet color-channel proportion for the pentaquark state."},
-        "color_6bar3": {"higher_is_better": true, "coefficient": 0.1, "description": "Reported sextet-antitriplet-antitriplet color-channel proportion for the pentaquark state."}
+        "color_3bar3": {"higher_is_better": true, "coefficient": 0.0, "description": "Reported antitriplet-antitriplet-antitriplet color-channel proportion for the pentaquark state; recorded as a diagnostic, not an optimization target."},
+        "color_3bar6": {"higher_is_better": true, "coefficient": 0.0, "description": "Reported antitriplet-sextet-antitriplet color-channel proportion for the pentaquark state; recorded as a diagnostic, not an optimization target."},
+        "color_6bar3": {"higher_is_better": true, "coefficient": 0.0, "description": "Reported sextet-antitriplet-antitriplet color-channel proportion for the pentaquark state; recorded as a diagnostic, not an optimization target."}
       },
       "results": {
         "threshold_baseline": {

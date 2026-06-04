@@ -6,4 +6,4 @@ action: done
 gpus: 0
 test: false
 milestone: core_claim_plus
-notes: "Final audit passed: accepted Tcc/Tbb scores regenerate from artifacts, validation passes, and core_claim_plus remains justified."
+notes: "Final verification passed: Tcc/Tbb gym scope is clean, scoring coefficients are corrected, and validation passes."

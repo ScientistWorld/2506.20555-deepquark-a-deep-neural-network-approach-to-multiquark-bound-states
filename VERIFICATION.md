@@ -2,24 +2,24 @@
 
 ## Initial Assessment
 
-The workspace started at `core_claim_plus`, and that milestone is justified. The reproduced `tcc_al1_binding` and `tbb_al1_binding` scores are close to the paper's reported AL1 tetraquark energies, and the implementation uses the paper's actual neural variational Monte Carlo code path rather than a surrogate.
+The workspace started at `core_claim_plus`, and that milestone remains justified. The accepted score set contains the reproduced AL1 Tcc and Tbb tetraquark targets, both close to the paper's reported energies and binding values. The method implementation is the actual DeepQuark neural variational Monte Carlo code path, while the evaluator reads checkpoint artifacts without importing `method/`.
 
 ## Issues Found
 
-- Minor: the main evaluator was artifact-based but hardcoded the reproduced method name, making it less reusable for future solvers.
-- Minor: method-facing artifact names appeared in method-agnostic evaluation documentation.
-- Cosmetic: generated `.nv/ComputeCache` and `trajectory/` files were tracked even though `.gitignore` excludes them.
+- Minor: `briefing/problem.md` and `briefing/evaluation.md` listed `ccqqc` as a standard gym target even though `scores.json` accepts only `tcc_al1_binding` and `tbb_al1_binding`.
+- Minor: color-channel proportions in `reference.json` had positive coefficients, which could reward arbitrary changes in diagnostic channel fractions. These values should be recorded for auditability, not optimized directly.
+- Cosmetic: a temporary regenerated score file remained under `tmp/`.
 
 ## Fixes Applied
 
-- Updated `eval/deepquark_scores.py` to discover any `checkpoints/<method>_<system>` artifact for the supported systems, matching the train/test evaluator interface.
-- Clarified `briefing/evaluation.md`, `scoring/TARGETS.md`, and `scoring/CONSTRAINTS.md` so the public scoring contract is generic and does not require future agents to use the reproduced method name.
-- Removed generated `.nv/ComputeCache` and `trajectory/` files from git tracking.
-- Re-ran `bash scripts/evaluate.sh`, `bash scripts/evaluate_train.sh`, `bash scripts/evaluate_test.sh`, and `python validate.py --compare`; all passed.
+- Clarified `briefing/problem.md` and `briefing/evaluation.md` so the accepted scored systems are `ccqq` and `bbqq`; the pentaquark result is described as paper context, not part of the accepted baseline.
+- Set color-channel metric coefficients to `0.0` in `scoring/reference.json` and updated `scoring/TARGETS.md` plus `scoring/CONSTRAINTS.md` to describe them as diagnostics.
+- Removed the temporary score check file from `tmp/`.
+- Re-ran `bash scripts/evaluate.sh`, `bash scripts/evaluate_train.sh`, `bash scripts/evaluate_test.sh`, and `python validate.py --compare`; all checks passed.
 
 ## Final Judgment
 
-The workspace is ready to serve as a research gym. Improve-mode agents can build on the packaged method and existing checkpoints; from-scratch agents can use the method-agnostic problem/evaluation files and emit the documented artifact format for scoring. The main limitation is that the accepted benchmark covers two tetraquark targets; the attempted pentaquark secondary claim remains documented but is not part of the accepted score set.
+The workspace is ready to serve as a research gym. Improve-mode agents can build on the packaged DeepQuark implementation and artifacts. From-scratch agents can use the method-agnostic problem and evaluation docs, produce artifacts under the documented `checkpoints/<method>_<system>` interface, and be scored without depending on the reproduced method code.
 
 - Milestone: core_claim_plus
 - Ready for gym use: yes

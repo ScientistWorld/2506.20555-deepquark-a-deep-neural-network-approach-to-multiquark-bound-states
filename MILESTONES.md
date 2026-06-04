@@ -32,5 +32,10 @@
 - Verified `python validate.py --compare` passes and that `eval/` remains independent of `method/`.
 - Kept Pccbar as a documented partial secondary attempt rather than an accepted target because the reproduced binding remains too shallow versus the paper.
 
+### [2026-06-04 07:11] - core_claim_plus
+- Final verification kept the accepted gym scope to the reproduced Tcc and Tbb experiments.
+- Adjusted reference metric coefficients so color-channel proportions are recorded diagnostics rather than direct optimization objectives.
+- Re-ran accepted, train-slice, and test-slice evaluators; validation passed.
+
 ## Stop Justification
 - Completed at milestone `core_claim_plus`.
