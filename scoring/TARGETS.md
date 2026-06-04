@@ -1,29 +1,33 @@
 # Evaluation Targets
 
-## Primary: tcc_al1_binding
+Run the accepted evaluation with:
 
-Tests whether a solver finds a bound isoscalar vector doubly charmed tetraquark under the AL1 Hamiltonian.
+```bash
+bash scripts/evaluate.sh
+```
 
-Metric: `binding_mev`, lower is better.
+The accepted `scores.json` contains two experiments: `tcc_al1_binding` and `tbb_al1_binding`.
 
-Run evaluation with `bash scripts/evaluate.sh`.
+## tcc_al1_binding
 
-## Primary: tbb_al1_binding
+Tests whether a solver finds the shallow isoscalar vector doubly charmed tetraquark bound state under the AL1 Hamiltonian.
 
-Tests whether a solver finds a deeply bound isoscalar vector doubly bottom tetraquark under the AL1 Hamiltonian.
+Primary target: `binding_mev`, lower is better. This is the scientific quantity the paper optimizes for this state: variational energy below the two-meson threshold.
 
-Metric: `binding_mev`, lower is better.
+Constraint target: `parameter_count`, lower is better at fixed quality, plus `mc_error_mev`, lower is better, and the reported color-channel proportions. A scientist should not win only by making the ansatz much larger, accepting high Monte Carlo noise, or dropping the coupled-channel description.
 
-Run evaluation with `bash scripts/evaluate.sh`.
+Ablation target: `threshold_baseline` in `scores.json`. This no-binding baseline scores `binding_mev = 0.0`; removing the variational multiquark treatment should fail to recover the negative binding energy.
 
-## Partial / Optional: pcc_al1_binding
+How to run: `bash scripts/evaluate.sh`, which reads artifacts from `checkpoints/deepquark_ccqq` and writes `scoring/scores.json`.
 
-Tests whether a solver finds the weakly bound isoscalar spin-5/2 triply heavy pentaquark under the AL1 Hamiltonian.
+## tbb_al1_binding
 
-Metric: `binding_mev`, lower is better.
+Tests whether a solver finds the deeply bound isoscalar vector doubly bottom tetraquark under the same AL1 Hamiltonian.
 
-The current reproduction artifacts include a partial Pccbar attempt, but it is not part of the accepted `core_claim_plus` score set because the reproduced binding remains too shallow relative to the paper. To score it explicitly, run `python eval/deepquark_scores.py --artifacts checkpoints --output scoring/scores.json --experiments pcc_al1_binding` and then inspect the result against `scoring/reference.json`.
+Primary target: `binding_mev`, lower is better. This checks that the method reproduces the compact heavy-tetraquark regime rather than only the shallow charm case.
 
-## Constraints
+Constraint target: `parameter_count`, lower is better at fixed quality, plus `mc_error_mev`, lower is better, and the reported color-channel proportions. Improvements should preserve a comparable DeepQuark-scale ansatz and stable Monte Carlo estimates.
 
-All experiments also score `mc_error_mev`, `parameter_count`, and color-channel proportions. A scientist should improve binding-energy estimates without inflating the ansatz beyond the target architecture or collapsing the coupled-channel treatment. The reusable accepted evaluation currently emits Tcc and Tbb because those are the reproduced claims; Pccbar remains documented as the next target for future improvement.
+Ablation target: `threshold_baseline` in `scores.json`. This no-binding baseline scores `binding_mev = 0.0`; removing the variational multiquark treatment should fail to recover the large negative binding energy.
+
+How to run: `bash scripts/evaluate.sh`, which reads artifacts from `checkpoints/deepquark_bbqq` and writes `scoring/scores.json`.

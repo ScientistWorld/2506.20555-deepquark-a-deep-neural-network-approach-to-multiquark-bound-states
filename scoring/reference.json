@@ -5,12 +5,12 @@
       "weight": 0.45,
       "primary_metric": "binding_mev",
       "metrics": {
-        "energy_mev": {"higher_is_better": false, "coefficient": -0.2},
-        "binding_mev": {"higher_is_better": false, "coefficient": -1.0},
-        "mc_error_mev": {"higher_is_better": false, "coefficient": -0.2},
-        "parameter_count": {"higher_is_better": false, "coefficient": -0.2},
-        "color_3bar3": {"higher_is_better": true, "coefficient": 0.1},
-        "color_6bar6": {"higher_is_better": true, "coefficient": 0.1}
+        "energy_mev": {"higher_is_better": false, "coefficient": -0.2, "description": "Variational total energy of the AL1 Tcc state in MeV."},
+        "binding_mev": {"higher_is_better": false, "coefficient": -1.0, "description": "Energy relative to the fixed two-meson threshold; more negative means stronger binding."},
+        "mc_error_mev": {"higher_is_better": false, "coefficient": -0.2, "description": "Monte Carlo standard error of the estimated energy in MeV."},
+        "parameter_count": {"higher_is_better": false, "coefficient": -0.2, "description": "Number of trainable ansatz parameters used for the scored artifact."},
+        "color_3bar3": {"higher_is_better": true, "coefficient": 0.1, "description": "Reported antitriplet-triplet color-channel proportion for the tetraquark state."},
+        "color_6bar6": {"higher_is_better": true, "coefficient": 0.1, "description": "Reported sextet-antisextet color-channel proportion for the tetraquark state."}
       },
       "results": {
         "threshold_baseline": {
@@ -47,12 +47,12 @@
       "weight": 0.35,
       "primary_metric": "binding_mev",
       "metrics": {
-        "energy_mev": {"higher_is_better": false, "coefficient": -0.2},
-        "binding_mev": {"higher_is_better": false, "coefficient": -1.0},
-        "mc_error_mev": {"higher_is_better": false, "coefficient": -0.2},
-        "parameter_count": {"higher_is_better": false, "coefficient": -0.2},
-        "color_3bar3": {"higher_is_better": true, "coefficient": 0.1},
-        "color_6bar6": {"higher_is_better": true, "coefficient": 0.1}
+        "energy_mev": {"higher_is_better": false, "coefficient": -0.2, "description": "Variational total energy of the AL1 Tbb state in MeV."},
+        "binding_mev": {"higher_is_better": false, "coefficient": -1.0, "description": "Energy relative to the fixed two-meson threshold; more negative means stronger binding."},
+        "mc_error_mev": {"higher_is_better": false, "coefficient": -0.2, "description": "Monte Carlo standard error of the estimated energy in MeV."},
+        "parameter_count": {"higher_is_better": false, "coefficient": -0.2, "description": "Number of trainable ansatz parameters used for the scored artifact."},
+        "color_3bar3": {"higher_is_better": true, "coefficient": 0.1, "description": "Reported antitriplet-triplet color-channel proportion for the tetraquark state."},
+        "color_6bar6": {"higher_is_better": true, "coefficient": 0.1, "description": "Reported sextet-antisextet color-channel proportion for the tetraquark state."}
       },
       "results": {
         "threshold_baseline": {
@@ -89,13 +89,13 @@
       "weight": 0.2,
       "primary_metric": "binding_mev",
       "metrics": {
-        "energy_mev": {"higher_is_better": false, "coefficient": -0.2},
-        "binding_mev": {"higher_is_better": false, "coefficient": -1.0},
-        "mc_error_mev": {"higher_is_better": false, "coefficient": -0.2},
-        "parameter_count": {"higher_is_better": false, "coefficient": -0.2},
-        "color_3bar3": {"higher_is_better": true, "coefficient": 0.1},
-        "color_3bar6": {"higher_is_better": true, "coefficient": 0.1},
-        "color_6bar3": {"higher_is_better": true, "coefficient": 0.1}
+        "energy_mev": {"higher_is_better": false, "coefficient": -0.2, "description": "Variational total energy of the AL1 Pccbar state in MeV."},
+        "binding_mev": {"higher_is_better": false, "coefficient": -1.0, "description": "Energy relative to the fixed baryon-meson threshold; more negative means stronger binding."},
+        "mc_error_mev": {"higher_is_better": false, "coefficient": -0.2, "description": "Monte Carlo standard error of the estimated energy in MeV."},
+        "parameter_count": {"higher_is_better": false, "coefficient": -0.2, "description": "Number of trainable ansatz parameters used for the scored artifact."},
+        "color_3bar3": {"higher_is_better": true, "coefficient": 0.1, "description": "Reported antitriplet-antitriplet-antitriplet color-channel proportion for the pentaquark state."},
+        "color_3bar6": {"higher_is_better": true, "coefficient": 0.1, "description": "Reported antitriplet-sextet-antitriplet color-channel proportion for the pentaquark state."},
+        "color_6bar3": {"higher_is_better": true, "coefficient": 0.1, "description": "Reported sextet-antitriplet-antitriplet color-channel proportion for the pentaquark state."}
       },
       "results": {
         "threshold_baseline": {

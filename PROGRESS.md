@@ -131,6 +131,7 @@ This is not physically plausible for the AL1 Tcc target and is treated only as a
 
 - Current deliverables are complete through `core_claim_plus`.
 - `scripts/reproduce.sh` now runs both accepted experiments before invoking the reusable evaluator.
+- Final wrap-up documentation is aligned to the accepted score set: `scoring/TARGETS.md`, `scoring/EXPERIMENTS.md`, `scoring/CONSTRAINTS.md`, and `scoring/DIRECTION.md` describe the two reproduced AL1 tetraquark experiments and the fixed improvement rules.
 - To reach `secondary_claims`, a future run should improve the Pccbar final-stage optimization enough to reproduce the paper's approximate -3 MeV binding, or add another validated non-tetraquark DeepQuark result such as `bbqqb`.
 - To reach `majority`, add more Table I/Table II entries and evaluate them with the same artifact-based scorer.
 
