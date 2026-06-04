@@ -27,5 +27,10 @@
 - Generalized the main evaluator to score any `checkpoints/<method>_<system>` artifact for the accepted systems.
 - Re-ran the accepted, train-slice, and test-slice evaluators; validation passed.
 
+### [2026-06-04 07:07] - core_claim_plus
+- Re-audited the workspace after handoff and confirmed the accepted score set still regenerates exactly from checkpoint artifacts.
+- Verified `python validate.py --compare` passes and that `eval/` remains independent of `method/`.
+- Kept Pccbar as a documented partial secondary attempt rather than an accepted target because the reproduced binding remains too shallow versus the paper.
+
 ## Stop Justification
 - Completed at milestone `core_claim_plus`.

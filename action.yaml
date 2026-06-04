@@ -6,4 +6,4 @@ action: done
 gpus: 0
 test: false
 milestone: core_claim_plus
-notes: "Final verification passed; evaluator generalized and core_claim_plus remains justified."
+notes: "Final audit passed: accepted Tcc/Tbb scores regenerate from artifacts, validation passes, and core_claim_plus remains justified."

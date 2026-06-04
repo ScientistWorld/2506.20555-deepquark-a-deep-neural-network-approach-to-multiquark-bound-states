@@ -17,6 +17,8 @@
 - GPU job `e794595d-5d4` completed a high-sample verification of the best Pccbar candidates and stabilized the partial pentaquark result at -0.83 MeV binding.
 - Continuation audit on 2026-06-02 confirmed the implementation and evaluator are trustworthy, then fixed `scripts/reproduce.sh` to regenerate both accepted Tcc and Tbb targets from scratch instead of relying on pre-existing artifacts.
 - Generated DeepQuark run directories under `method/DeepQuark/AL1/` were removed from the tracked source surface and are now ignored; the supported artifact interface remains `checkpoints/`.
+- Final 2026-06-04 audit regenerated `tmp/scores_check.json` from the checkpoint artifacts and confirmed it is byte-identical to `scoring/scores.json`.
+- `python validate.py --compare` passes with artifact-based Tcc and Tbb scores, train/test slice scores, and import-separation checks.
 
 ## Results
 
