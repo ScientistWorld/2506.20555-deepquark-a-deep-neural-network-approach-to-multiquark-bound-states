@@ -1,0 +1,5 @@
+_backup/
+work/
+**/*.log
+**/__pycache__/
+
