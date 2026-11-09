@@ -13,7 +13,7 @@ names = [
     'shortcut_changed_hamiltonian', 'shortcut_threshold_change', 'shortcut_direct_scores',
     'shortcut_null_records', 'shortcut_empty_records',
     'weaker_less_training', 'reference_seed_0', 'reference_seed_1', 'reference_seed_2',
-    'better_more_training',
+    'better_more_training', 'honest_more_samples',
 ]
 for name in names:
     folder = rt / name
@@ -22,7 +22,7 @@ for name in names:
         print('SKIP completed', name, flush=True)
         continue
     print('START', name, flush=True)
-    with (folder / 'run.log').open('w') as log:
+    with (folder / 'run.log').open('a') as log:
         result = subprocess.run(['bash', str(folder / 'run.sh')], cwd=root, stdout=log, stderr=subprocess.STDOUT)
     if result.returncode:
         lines = (folder / 'run.log').read_text().splitlines()

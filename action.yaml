@@ -2,4 +2,4 @@ action: submit
 gpus: 1
 test: false
 milestone: core_claim_plus
-notes: "Audit: full reference seeds 0/1/2, weaker and extra-training variants, and unchanged hidden-test artifact shortcuts in one resumable job."
+notes: "Audit continuation: preserve completed charm result, finish 15 bottom training blocks, then evaluate reference states with four times as many samples. All shortcut and three-seed results are saved."

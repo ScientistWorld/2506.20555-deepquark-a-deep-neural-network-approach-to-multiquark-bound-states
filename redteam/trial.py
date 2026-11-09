@@ -183,6 +183,9 @@ def seeded_mcstate(*args, **kwargs):
 
 def make_work(name):
     work = RT / 'work' / name / 'DeepQuark'
+    # A scheduler timeout must not erase completed continuation checkpoints.
+    if name == 'better_more_training' and work.exists():
+        return work
     if work.exists():
         shutil.rmtree(work)
     shutil.copytree(ROOT / 'method/DeepQuark', work,
@@ -192,8 +195,58 @@ def make_work(name):
         source = path.read_text().replace('nk.vqs.MCState(', 'seeded_mcstate(')
         anchor = '"""Model"""' if file != 'continue_train3.py' else 'def env_int(name, default):'
         source = source.replace(anchor, SEED_HELPER + '\n' + anchor, 1)
+        if name == 'honest_more_samples' and file == 'eval.py':
+            # More samples need not enlarge the local-energy working batch.
+            source = source.replace('chunk_size=max(1, nsample // 4)',
+                                    'chunk_size=min(25000, max(1, nsample // 4))')
         path.write_text(source)
     return work
+
+
+def continuation(work, system, args, env):
+    source = RT / 'work/reference_seed_0/DeepQuark/AL1' / f'{system}(S=1.0_I=0.0)' / '1'
+    dest = work / 'AL1' / f'{system}(S=1.0_I=0.0)' / '1'
+    if not dest.exists():
+        shutil.copytree(source, dest)
+    # Select the initial state using ONLY the public train slice.
+    records = read(source / 'results.json')
+    items = [(ck, rec) for ck, values in sorted(records.items())
+             for _, rec in sorted(values.items())]
+    best_ck, _ = min(items[::2], key=lambda item: float(item[1]['Emean']))
+    complete = []
+    discarded = []
+    for path in dest.glob('Train3_*.mpack'):
+        index = int(path.stem.removeprefix('Train3_'))
+        if index < 10:
+            continue
+        logpath = path.with_suffix('.log')
+        # NetKet writes snapshots during a block too. Only retain full blocks;
+        # the interrupted 17-step block is restarted from the previous state.
+        steps = read(logpath)['Energy']['iters'] if logpath.exists() else []
+        if len(steps) == 50 and steps[-1] % 50 == 49:
+            complete.append(index)
+        else:
+            discarded.append(index)
+            path.unlink()
+            if logpath.exists():
+                logpath.unlink()
+    first_new = max(complete, default=9) + 1
+    start = str(first_new - 1) if complete else str(best_ck)
+    plan = {'initial_train_selected_checkpoint': str(best_ck),
+            'resume_from': start, 'first_new_index': first_new,
+            'blocks_remaining': max(0, 30 - first_new),
+            'completed_extra_blocks_before_resume': sorted(complete),
+            'discarded_partial_blocks': sorted(discarded),
+            'target_extra_blocks': 20, 'iterations_per_block': 50, 'lr': 0.0001}
+    history_path = RT / 'better_more_training' / f'resume_history_{system}.json'
+    history = read(history_path) if history_path.exists() else []
+    history.append(plan)
+    write(history_path, history)
+    if first_new < 30:
+        env.update({'DQ_RESUME_FROM': start, 'DQ_RESUME_START_INDEX': str(first_new),
+                    'DQ_RESUME_TRAIN3_BLOCKS': str(30 - first_new),
+                    'DQ_RESUME_TRAIN3_ITERS': '50', 'DQ_RESUME_LR': '0.0001'})
+        command([sys.executable, 'multiquark/continue_train3.py', *args, '--n', '1'], work, env)
 
 
 def quality_variant(name):
@@ -212,23 +265,25 @@ def quality_variant(name):
     if name == 'weaker_less_training':
         env.update({'DQ_TRAIN1_ITERS': '20', 'DQ_TRAIN2_BLOCKS': '1', 'DQ_TRAIN2_ITERS': '20',
                     'DQ_TRAIN3_ITERS': '2'})
+    if name == 'honest_more_samples':
+        env['DQ_EVAL_NSAMPLE'] = '400000'
     work = make_work(name)
     for system in SYSTEMS:
         args = ['AL1', system, '1', '0']
+        saved = RT / name / 'artifacts' / f'deepquark_{system}'
+        if name == 'better_more_training' and all((saved / f).exists() for f in
+                ('parameters.json', 'train.json', 'eval.json', 'results.json')):
+            print('REUSE completed system', name, system, flush=True)
+            shutil.copytree(saved, ART / f'deepquark_{system}', dirs_exist_ok=True)
+            continue
         if name == 'better_more_training':
+            continuation(work, system, args, env)
+            indices = list(range(20, 30))
+        elif name == 'honest_more_samples':
             source = RT / 'work/reference_seed_0/DeepQuark/AL1' / f'{system}(S=1.0_I=0.0)' / '1'
             dest = work / 'AL1' / f'{system}(S=1.0_I=0.0)' / '1'
             shutil.copytree(source, dest, dirs_exist_ok=True)
-            # Select the starting state using ONLY the public train slice.
-            records = read(source / 'results.json')
-            items = [(ck, rec) for ck, values in sorted(records.items())
-                     for _, rec in sorted(values.items())]
-            best_ck, _ = min(items[::2], key=lambda item: float(item[1]['Emean']))
-            env.update({'DQ_RESUME_FROM': str(best_ck), 'DQ_RESUME_START_INDEX': '10',
-                        'DQ_RESUME_TRAIN3_BLOCKS': '20', 'DQ_RESUME_TRAIN3_ITERS': '50',
-                        'DQ_RESUME_LR': '0.0001'})
-            command([sys.executable, 'multiquark/continue_train3.py', *args, '--n', '1'], work, env)
-            indices = list(range(20, 30))
+            indices = list(range(10))
         else:
             command([sys.executable, 'multiquark/train.py', *args], work, env)
             indices = list(range(10))

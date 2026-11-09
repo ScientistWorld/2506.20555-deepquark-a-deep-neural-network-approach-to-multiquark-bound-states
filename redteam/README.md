@@ -29,6 +29,18 @@ at learning rate 0.0001, and evaluates its final ten checkpoints with the same
 sampling settings. It is an actual optimization experiment; it is not assumed
 to improve until its results demonstrate that.
 
+The higher-precision alternative reuses all ten reference-seed-0 states and
+evaluates each with 400000 samples instead of 100000, retaining two repeats.
+It caps local-energy batches at 25000 to retain the original memory footprint.
+This improves sampling precision, not the trained variational wavefunction.
+
+The first six-hour job completed every shortcut, the weaker variant and all
+three reference seeds, then timed out during the extra-training bottom system.
+Continuation now preserves finished systems and full 50-iteration blocks,
+discards the partially saved block, and resumes the remaining blocks. A resumed
+process restarts its sampler; it keeps the saved neural parameters and the same
+SGD/SR algorithm. Resume plans are retained with the trial.
+
 Ignored `_backup/` stores a reversible copy of the initial checkpoint tree;
 ignored `work/` stores generated training checkpoints and logs. The initial
 tracked-file status is recorded in `initial_status.txt` because system-provided
