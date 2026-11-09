@@ -1,54 +1,9 @@
 #!/bin/bash
+# Hardening job: retrain the reference (scripts/reproduce.sh, seed 0), train the
+# better/seed variants, build shortcut submissions and score everything with
+# the new evaluators. Resumable; see scripts/hardening/driver.py.
 set -euo pipefail
 
 cd /home/user
-
-export JAX_PLATFORM_NAME="${JAX_PLATFORM_NAME:-gpu}"
 export XLA_PYTHON_CLIENT_PREALLOCATE=false
-
-export DQ_POTENTIAL=AL1
-export DQ_QUARKS=ccqqc
-export DQ_SPIN=2.5
-export DQ_ISOSPIN=0
-export DQ_ARTIFACT_NAME=deepquark_ccqqc
-export DQ_SKIP_TRAIN=1
-export DQ_RUN_ID=1
-
-export DQ_NCHAINS=2000
-export DQ_NSWEEP=20
-export DQ_NSAMPLE=20000
-export DQ_NDISCARD=100
-export DQ_TRAIN1_ITERS=1000
-export DQ_TRAIN2_BLOCKS=6
-export DQ_TRAIN2_ITERS=500
-export DQ_TRAIN2_NDISCARD=200
-export DQ_CHECK_NCHAINS=2000
-export DQ_CHECK_NSWEEP=50
-export DQ_CHECK_NSAMPLE=100000
-export DQ_CHECK_NDISCARD=500
-export DQ_CHECK_REPEATS=2
-export DQ_VARIANCE_TARGET=0.002
-export DQ_TRAIN3_ITERS=50
-export DQ_RESUME_TRAIN3_BLOCKS=10
-export DQ_RESUME_TRAIN3_ITERS=50
-export DQ_RESUME_FROM=27
-export DQ_RESUME_START_INDEX=40
-export DQ_RESUME_LR=0.00002
-export DQ_SKIP_RESUME=1
-export DQ_EVAL_NCHAINS=2000
-export DQ_EVAL_NSWEEP=100
-export DQ_EVAL_NSAMPLE=400000
-export DQ_EVAL_NDISCARD=1000
-export DQ_TRAIN3_BLOCKS=40
-export DQ_EVAL_IRANGE='[25, 27, 43]'
-export DQ_EVAL_REPEATS=2
-export DQ_EVAL_SKIP_RMS=1
-
-cd /home/user/method/DeepQuark
-if [ "${DQ_SKIP_RESUME:-0}" != "1" ]; then
-  python multiquark/continue_train3.py "$DQ_POTENTIAL" "$DQ_QUARKS" "$DQ_SPIN" "$DQ_ISOSPIN" --n "$DQ_RUN_ID"
-else
-  echo "Skipping Train3 continuation because DQ_SKIP_RESUME=1"
-fi
-cd /home/user
-bash scripts/reproduce.sh
+python scripts/hardening/driver.py

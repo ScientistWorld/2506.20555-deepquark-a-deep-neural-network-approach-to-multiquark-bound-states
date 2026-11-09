@@ -17,6 +17,21 @@ from operator_ import MultiPotentialEnergy
 from hi_op_ import (_nd, _nparticles, hi, hi_dis, n_discrete, dof_color, ha,
                     color_proportions, spin_proportions, ms_radius)
 
+_mcstate_counter = 0
+
+
+def make_mcstate(*args, **kwargs):
+    """nk.vqs.MCState, seeded from DQ_SEED when it is set (otherwise unseeded)."""
+    global _mcstate_counter
+    _mcstate_counter += 1
+    seed = os.environ.get("DQ_SEED")
+    if seed is not None and seed != "":
+        s = int(seed) + 1009 * _mcstate_counter
+        kwargs.setdefault("seed", s)
+        kwargs.setdefault("sampler_seed", s + 500003)
+    return nk.vqs.MCState(*args, **kwargs)
+
+
 """Model"""
 if quarks[0] == quarks[1] and quarks[2] == quarks[3]:
     idparticles = [[0, 1, -1], [2, 3, (-1) ** I]]
@@ -62,7 +77,7 @@ if skip_rms:
     evaluation['skip_rms'] = True
 sa = nk.sampler.MetropolisSampler(hi, GaussianFlipRule(hi_dis=hi_dis, sigma=sigma), n_chains=nchains,
                                   sweep_size=nsweep)
-eval_vs = nk.vqs.MCState(sa, model, n_samples=nsample, n_discard_per_chain=ndiscard, chunk_size=max(1, nsample // 4))
+eval_vs = make_mcstate(sa, model, n_samples=nsample, n_discard_per_chain=ndiscard, chunk_size=max(1, nsample // 4))
 
 logpath = out_path('eval', n)
 with open(f'{logpath}/eval.json', 'w', encoding='utf-8') as f:

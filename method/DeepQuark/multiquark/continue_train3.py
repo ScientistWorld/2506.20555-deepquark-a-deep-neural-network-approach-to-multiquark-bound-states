@@ -15,6 +15,21 @@ from config_ import quarks, MASS, I, default_serializer, out_path, nlayers, nhid
 from hi_op_ import _nd, _nparticles, hi, hi_dis, n_discrete, ha
 
 
+_mcstate_counter = 0
+
+
+def make_mcstate(*args, **kwargs):
+    """nk.vqs.MCState, seeded from DQ_SEED when it is set (otherwise unseeded)."""
+    global _mcstate_counter
+    _mcstate_counter += 1
+    seed = os.environ.get("DQ_SEED")
+    if seed is not None and seed != "":
+        s = int(seed) + 1009 * _mcstate_counter
+        kwargs.setdefault("seed", s)
+        kwargs.setdefault("sampler_seed", s + 500003)
+    return nk.vqs.MCState(*args, **kwargs)
+
+
 def env_int(name, default):
     return int(os.environ.get(name, default))
 
@@ -77,7 +92,7 @@ def main():
     sampler = nk.sampler.MetropolisSampler(
         hi, GaussianFlipRule(hi_dis=hi_dis, sigma=sigma), n_chains=nchains, sweep_size=nsweep
     )
-    vs = nk.vqs.MCState(
+    vs = make_mcstate(
         sampler, model, n_samples=nsample, n_discard_per_chain=ndiscard, chunk_size=max(1, nsample // 4)
     )
     with open(f"{logpath}/Train3_{start}.mpack", "rb") as handle:

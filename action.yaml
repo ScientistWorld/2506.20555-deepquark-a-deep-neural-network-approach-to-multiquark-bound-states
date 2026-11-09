@@ -1,8 +1,8 @@
 # Once you set action to 'submit' or 'done', STOP immediately.
 # Do NOT sleep, poll, or wait for jobs. The system reads this file
 # only after your turn ends.
-action: pending
-gpus: 0
+action: submit
+gpus: 2
 test: false
 milestone: core_claim_plus
-notes: ""
+notes: "Hardening job: retrain DeepQuark reference (authors' defaults, seed 0) for Tcc/Tbb/Pcc and export wavefunctions; train full-schedule better variant and seed-1 variant; export old/redteam states; NetKet cross-check of the new VMC evaluator; shortcut submissions; score all with new train/test evaluators."

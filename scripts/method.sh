@@ -1,13 +1,18 @@
 #!/bin/bash
+# Train (optional), evaluate and export one DeepQuark system.
+# The exported wavefunction lands in checkpoints/$ARTIFACT_NAME/wavefunction.jaxexport,
+# which is the only file the gym evaluators read.
 set -euo pipefail
 
-cd /home/user/method/DeepQuark
+ROOT="${DQ_ROOT:-/home/user}"
+cd "${DQ_CODE_DIR:-$ROOT/method/DeepQuark}"
 
 POTENTIAL="${DQ_POTENTIAL:-AL1}"
 QUARKS="${DQ_QUARKS:-ccqq}"
 SPIN="${DQ_SPIN:-1}"
 ISOSPIN="${DQ_ISOSPIN:-0}"
 ARTIFACT_NAME="${DQ_ARTIFACT_NAME:-deepquark_${QUARKS}}"
+DEST="${DQ_ARTIFACT_ROOT:-$ROOT/checkpoints}/$ARTIFACT_NAME"
 
 if [ "${DQ_SKIP_TRAIN:-0}" != "1" ]; then
   python multiquark/train.py "$POTENTIAL" "$QUARKS" "$SPIN" "$ISOSPIN"
@@ -41,17 +46,20 @@ if [ -n "${DQ_EVAL_IRANGE:-}" ]; then
   IRANGE="$DQ_EVAL_IRANGE"
 else
   IRANGE_END="${DQ_TRAIN3_BLOCKS:-10}"
-  IRANGE_END=$((IRANGE_END - 1))
-  IRANGE="$(python - <<PY
-print(list(range($IRANGE_END + 1)))
-PY
-)"
+  IRANGE="$(python -c "print(list(range($IRANGE_END)))")"
 fi
-python multiquark/eval.py "$POTENTIAL" "$QUARKS" "$SPIN" "$ISOSPIN" --n "$RUN_ID" --irange "$IRANGE"
+if [ "${DQ_SKIP_EVAL:-0}" != "1" ]; then
+  python multiquark/eval.py "$POTENTIAL" "$QUARKS" "$SPIN" "$ISOSPIN" --n "$RUN_ID" --irange "$IRANGE"
+fi
 
-DEST="/home/user/checkpoints/$ARTIFACT_NAME"
+# Select the lowest-energy checkpoint of the method's own evaluation and export it.
 mkdir -p "$DEST"
-cp "$RUN_PARENT/$RUN_ID/parameters.json" "$DEST/parameters.json"
-cp "$RUN_PARENT/$RUN_ID/train.json" "$DEST/train.json"
-cp "$RUN_PARENT/$RUN_ID/eval.json" "$DEST/eval.json"
-cp "$RUN_PARENT/$RUN_ID/results.json" "$DEST/results.json"
+DQ_EXPORT_DIR="$DEST" python multiquark/export.py "$POTENTIAL" "$QUARKS" "$SPIN" "$ISOSPIN" \
+  --n "$RUN_ID" --irange "$IRANGE"
+
+# Provenance only; the evaluators never read these files.
+for f in parameters.json train.json eval.json results.json; do
+  if [ -f "$RUN_PARENT/$RUN_ID/$f" ]; then
+    cp "$RUN_PARENT/$RUN_ID/$f" "$DEST/$f"
+  fi
+done

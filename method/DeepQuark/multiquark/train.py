@@ -16,6 +16,21 @@ from hi_op_ import _nd, _nparticles, hi, hi_dis, n_discrete, ha
 
 logpath = out_path('train')
 
+_mcstate_counter = 0
+
+
+def make_mcstate(*args, **kwargs):
+    """nk.vqs.MCState, seeded from DQ_SEED when it is set (otherwise unseeded)."""
+    global _mcstate_counter
+    _mcstate_counter += 1
+    seed = os.environ.get("DQ_SEED")
+    if seed is not None and seed != "":
+        s = int(seed) + 1009 * _mcstate_counter
+        kwargs.setdefault("seed", s)
+        kwargs.setdefault("sampler_seed", s + 500003)
+    return nk.vqs.MCState(*args, **kwargs)
+
+
 """Model"""
 if quarks[0] == quarks[1] and quarks[2] == quarks[3]:
     idparticles = [[0, 1, -1], [2, 3, (-1) ** I]]
@@ -75,7 +90,7 @@ ndiscard = env_int("DQ_NDISCARD", 100)
 lr1 = lr * 2
 sa = nk.sampler.MetropolisSampler(hi, GaussianFlipRule(hi_dis=hi_dis, sigma=sigma), n_chains=nchains,
                                   sweep_size=nsweep)
-vs = nk.vqs.MCState(sa, model, n_samples=nsample, n_discard_per_chain=ndiscard)
+vs = make_mcstate(sa, model, n_samples=nsample, n_discard_per_chain=ndiscard)
 op1 = nk.optimizer.Sgd(lr1)
 gs = nk.VMC(ha, op1, variational_state=vs, preconditioner=sr)
 
@@ -88,7 +103,7 @@ train1 = {'nchains': nchains, 'nsweep': nsweep, 'nsample': nsample, 'ndiscard': 
 ndiscard = env_int("DQ_TRAIN2_NDISCARD", 200)
 sa = nk.sampler.MetropolisSampler(hi, GaussianFlipRule(hi_dis=hi_dis, sigma=sigma), n_chains=nchains,
                                   sweep_size=nsweep)
-vs = nk.vqs.MCState(sa, model, n_samples=nsample, n_discard_per_chain=ndiscard)
+vs = make_mcstate(sa, model, n_samples=nsample, n_discard_per_chain=ndiscard)
 vs.variables = variables
 train2 = {}
 
@@ -102,7 +117,7 @@ for i in range(env_int("DQ_TRAIN2_BLOCKS", 10)):
     train2[i] = {'nchains': nchains, 'nsweep': nsweep, 'nsample': nsample, 'ndiscard': ndiscard, 'lr': lr2,
                  'sigma': sigma * 0.197}
 
-    eval_vs = nk.vqs.MCState(
+    eval_vs = make_mcstate(
         nk.sampler.MetropolisSampler(
             hi,
             GaussianFlipRule(hi_dis=hi_dis, sigma=sigma),
@@ -134,13 +149,24 @@ if not TRAINED:
 #     variables = flax.serialization.from_bytes(vs.variables, file.read())
 lr3 = lr * 0.1
 op3 = nk.optimizer.Sgd(lr3)
+# Optional larger final-stage batch ("increase the sample size to stabilize the
+# optimization as the wave function approaches convergence"); default unchanged.
+nsample3 = env_int("DQ_TRAIN3_NSAMPLE", nsample)
+if nsample3 != nsample:
+    variables = vs.variables
+    sa = nk.sampler.MetropolisSampler(hi, GaussianFlipRule(hi_dis=hi_dis, sigma=sigma), n_chains=nchains,
+                                      sweep_size=nsweep)
+    vs = make_mcstate(sa, model, n_samples=nsample3, n_discard_per_chain=ndiscard,
+                      chunk_size=min(nsample3, 25000))
+    vs.variables = variables
 gs = nk.VMC(ha, op3, variational_state=vs, preconditioner=sr)
 
 for i in range(env_int("DQ_TRAIN3_BLOCKS", 10)):
     gs.run(n_iter=env_int("DQ_TRAIN3_ITERS", 50), out=f"{logpath}/Train3_{i}")
 
-train3 = {'nchains': nchains, 'nsweep': nsweep, 'nsample': nsample, 'ndiscard': ndiscard, 'lr': lr3,
+train3 = {'nchains': nchains, 'nsweep': nsweep, 'nsample': nsample3, 'ndiscard': ndiscard, 'lr': lr3,
           'sigma': sigma * 0.197}
 with open(f'{logpath}/train.json', 'w', encoding='utf-8') as f:
-    json.dump({'Train1': train1, 'Train2': train2, 'Train3': train3}, f, indent=2, default=default_serializer,
+    json.dump({'Train1': train1, 'Train2': train2, 'Train3': train3, 'seed': os.environ.get('DQ_SEED')}, f,
+              indent=2, default=default_serializer,
               ensure_ascii=False)

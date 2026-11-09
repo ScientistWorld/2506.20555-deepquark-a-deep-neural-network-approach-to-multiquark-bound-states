@@ -1,7 +1,9 @@
 #!/bin/bash
+# Score every submission under checkpoints/ with the public evaluation protocol
+# and validate the workspace.
 set -euo pipefail
 
 cd /home/user
 
-python eval/deepquark_scores.py --artifacts checkpoints --output scoring/scores.json --experiments tcc_al1_binding,tbb_al1_binding
+python eval/train/evaluate.py --artifacts checkpoints --output scoring/scores.json
 python validate.py --compare

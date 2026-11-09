@@ -1,5 +1,11 @@
 # Large files — do not commit (applies everywhere, including tmp/)
-checkpoints/
+# checkpoints/: only the small reference submissions ship with the repo
+checkpoints/*
+!checkpoints/.gitkeep
+!checkpoints/deepquark_*/
+checkpoints/deepquark_*/*
+!checkpoints/deepquark_*/wavefunction.jaxexport
+!checkpoints/deepquark_*/export_meta.json
 *.pt
 *.pth
 *.ckpt
