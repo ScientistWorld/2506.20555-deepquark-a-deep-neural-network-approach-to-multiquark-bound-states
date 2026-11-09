@@ -1,3 +1,8 @@
-action: done
+# Once you set action to 'submit' or 'done', STOP immediately.
+# Do NOT sleep, poll, or wait for jobs. The system reads this file
+# only after your turn ends.
+action: pending
+gpus: 0
+test: false
 milestone: core_claim_plus
-notes: "Scoring audit complete: no-binding baseline beats reference by 225.1033; seed spread 0.1636; extra-training gain is within noise. Ten shortcut checks recorded, original gym code and checkpoints restored. See REDTEAM.md."
+notes: ""
