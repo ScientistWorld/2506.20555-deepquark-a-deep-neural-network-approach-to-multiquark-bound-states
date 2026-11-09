@@ -1,0 +1,17 @@
+{
+  "delta_vs_shipped_test_reference": 0.3823000000000196,
+  "terms": {
+    "tcc_al1_binding": {
+      "energy_mev": 0.06390000000000329,
+      "binding_mev": 0.3195000000000164,
+      "mc_error_mev": -0.0017999999999999993,
+      "parameter_count": -0.0
+    },
+    "tbb_al1_binding": {
+      "energy_mev": -0.0,
+      "binding_mev": -0.0,
+      "mc_error_mev": 0.0006999999999999986,
+      "parameter_count": -0.0
+    }
+  }
+}

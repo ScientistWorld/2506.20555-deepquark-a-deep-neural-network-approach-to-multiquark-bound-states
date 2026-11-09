@@ -1,5 +1,5 @@
 {
   "status": "failed",
   "exception": "CalledProcessError(1, ['bash', 'scripts/evaluate_test.sh'])",
-  "seconds": 0.26235485076904297
+  "seconds": 0.27174925804138184
 }

@@ -1,0 +1,21 @@
+[
+  {
+    "initial_train_selected_checkpoint": "7",
+    "resume_from": "14",
+    "first_new_index": 15,
+    "blocks_remaining": 15,
+    "completed_extra_blocks_before_resume": [
+      10,
+      11,
+      12,
+      13,
+      14
+    ],
+    "discarded_partial_blocks": [
+      15
+    ],
+    "target_extra_blocks": 20,
+    "iterations_per_block": 50,
+    "lr": 0.0001
+  }
+]

@@ -1,3 +1,26 @@
+  File "/home/user/eval/test/evaluate.py", line 163, in main
+    results[method_name] = _score_artifact(artifact_dir, config)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/eval/test/evaluate.py", line 106, in _score_artifact
+    result = _best_eval(_load_json(artifact_dir / "results.json"))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/eval/test/evaluate.py", line 59, in _best_eval
+    raise ValueError("No evaluation records with Emean were found")
+ValueError: No evaluation records with Emean were found
+Traceback (most recent call last):
+  File "/home/user/redteam/trial.py", line 270, in <module>
+    main()
+  File "/home/user/redteam/trial.py", line 254, in main
+    shortcut(name)
+  File "/home/user/redteam/trial.py", line 169, in shortcut
+    score(name, run_train=name not in ('shortcut_null_records', 'shortcut_empty_records'))
+  File "/home/user/redteam/trial.py", line 50, in score
+    command(['bash', 'scripts/evaluate_test.sh'])
+  File "/home/user/redteam/trial.py", line 42, in command
+    subprocess.run(list(map(str, args)), cwd=cwd, env=env, check=True, timeout=timeout)
+  File "/usr/local/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['bash', 'scripts/evaluate_test.sh']' returned non-zero exit status 1.
 RUN bash scripts/evaluate_test.sh
 Traceback (most recent call last):
   File "/home/user/eval/test/evaluate.py", line 173, in <module>
@@ -12,9 +35,9 @@ Traceback (most recent call last):
     raise ValueError("No evaluation records with Emean were found")
 ValueError: No evaluation records with Emean were found
 Traceback (most recent call last):
-  File "/home/user/redteam/trial.py", line 270, in <module>
+  File "/home/user/redteam/trial.py", line 325, in <module>
     main()
-  File "/home/user/redteam/trial.py", line 254, in main
+  File "/home/user/redteam/trial.py", line 309, in main
     shortcut(name)
   File "/home/user/redteam/trial.py", line 169, in shortcut
     score(name, run_train=name not in ('shortcut_null_records', 'shortcut_empty_records'))

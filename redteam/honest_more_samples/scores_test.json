@@ -1,0 +1,45 @@
+{
+  "slice": "test",
+  "experiments": {
+    "tcc_al1_binding": {
+      "results": {
+        "deepquark": {
+          "energy_mev": 3863.47,
+          "binding_mev": -14.5300000000002,
+          "mc_error_mev": 0.12000000000000001,
+          "parameter_count": 1857.0,
+          "color_3bar3": 0.58,
+          "color_6bar6": 0.42
+        },
+        "threshold_baseline": {
+          "energy_mev": 3878.0,
+          "binding_mev": 0.0,
+          "mc_error_mev": 0.0,
+          "parameter_count": 0.0,
+          "color_3bar3": 0.0,
+          "color_6bar6": 0.0
+        }
+      }
+    },
+    "tbb_al1_binding": {
+      "results": {
+        "deepquark": {
+          "energy_mev": 10490.769999999999,
+          "binding_mev": -153.23000000000138,
+          "mc_error_mev": 0.1,
+          "parameter_count": 1857.0,
+          "color_3bar3": 0.967,
+          "color_6bar6": 0.033
+        },
+        "threshold_baseline": {
+          "energy_mev": 10644.0,
+          "binding_mev": 0.0,
+          "mc_error_mev": 0.0,
+          "parameter_count": 0.0,
+          "color_3bar3": 0.0,
+          "color_6bar6": 0.0
+        }
+      }
+    }
+  }
+}
