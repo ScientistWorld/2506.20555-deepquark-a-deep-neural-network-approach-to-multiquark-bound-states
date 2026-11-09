@@ -1,0 +1,36 @@
+{
+  "Train1": {
+    "nchains": 2000,
+    "nsweep": 20,
+    "nsample": 20000,
+    "ndiscard": 100,
+    "lr": 0.02,
+    "sigma": 0.01
+  },
+  "Train2": {
+    "0": {
+      "nchains": 2000,
+      "nsweep": 20,
+      "nsample": 20000,
+      "ndiscard": 200,
+      "lr": 0.02,
+      "sigma": 0.01
+    },
+    "1": {
+      "nchains": 2000,
+      "nsweep": 20,
+      "nsample": 20000,
+      "ndiscard": 200,
+      "lr": 0.018000000000000002,
+      "sigma": 0.01
+    }
+  },
+  "Train3": {
+    "nchains": 2000,
+    "nsweep": 20,
+    "nsample": 20000,
+    "ndiscard": 200,
+    "lr": 0.001,
+    "sigma": 0.01
+  }
+}
