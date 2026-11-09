@@ -1,0 +1,6 @@
+{
+  "classification": "tie shortcut using cached trained reports",
+  "accepted_rank_delta": 0.0,
+  "attempted_mechanism_succeeds": false,
+  "explanation": "Direct scalar overwrite is replaced by hidden evaluation."
+}

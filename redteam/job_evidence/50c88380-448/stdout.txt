@@ -1,0 +1,43 @@
+[hive] This stdout log is managed by Hive.
+[hive] job_id: 23ea365f
+[hive] host: node
+[hive] node_id: a3066a3b993c45732d91d1810270caddbc5198c37aefe87124ac7d95
+[hive] user: nexus/user (remote)
+[hive] resource: gpu-2
+[hive] gpus: 1
+[hive] cpus: 1
+[hive] workdir: /home/user
+[hive] timeout_sec: 21600
+[hive] started_at: 2026-11-09 02:29:43 EST
+[hive] command: apptainer exec --nv --containall --cleanenv --env HF_HOME=/home/user/shared/hf_cache --env TRANSFORMERS_CACHE=/home/user/shared/hf_cache --env HF_DATASETS_CACHE=/home/user/shared/hf_cache/datasets --env TORCH_HOME=/home/user/shared/hf_cache/torch --bind /home/user/scratch/AgentWorkspaces/workspaces/2506.20555:/home/user --overlay /home/user/scratch/AgentWorkspaces/workspaces/2506.20555/environment/overlay.img:ro --bind /home/user/scratch/AgentWorkspaces/shared/datasets:/home/user/shared/datasets:ro --bind /home/user/scratch/AgentWorkspaces/shared/models:/home/user/shared/models:ro --bind /home/user/scratch/AgentWorkspaces/shared/hf_cache:/home/user/shared/hf_cache /home/user/scratch/AgentWorkspaces/workspaces/2506.20555/environment/container.sif bash -c 'cd /home/user && bash /home/user/scripts/run.sh'
+START reference
+FINISHED reference exit 0
+START shortcut_visible_answer_replay
+FINISHED shortcut_visible_answer_replay exit 0
+START shortcut_fabricated_energy
+FINISHED shortcut_fabricated_energy exit 0
+START shortcut_impossible_values
+FINISHED shortcut_impossible_values exit 0
+START shortcut_zero_metadata
+FINISHED shortcut_zero_metadata exit 0
+START shortcut_test_record_replay
+FINISHED shortcut_test_record_replay exit 0
+START shortcut_changed_hamiltonian
+FINISHED shortcut_changed_hamiltonian exit 0
+START shortcut_threshold_change
+FINISHED shortcut_threshold_change exit 0
+START shortcut_direct_scores
+FINISHED shortcut_direct_scores exit 0
+START shortcut_null_records
+FINISHED shortcut_null_records exit 1
+START shortcut_empty_records
+FINISHED shortcut_empty_records exit 1
+START weaker_less_training
+FINISHED weaker_less_training exit 0
+START reference_seed_0
+FINISHED reference_seed_0 exit 0
+START reference_seed_1
+FINISHED reference_seed_1 exit 0
+START reference_seed_2
+FINISHED reference_seed_2 exit 0
+START better_more_training

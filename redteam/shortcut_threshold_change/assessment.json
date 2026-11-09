@@ -1,0 +1,6 @@
+{
+  "classification": "tie shortcut using cached trained reports",
+  "accepted_rank_delta": 0.0,
+  "attempted_mechanism_succeeds": false,
+  "explanation": "Submitted threshold options are ignored; hidden thresholds remain fixed."
+}

@@ -1,5 +1,3 @@
-action: submit
-gpus: 1
-test: false
+action: done
 milestone: core_claim_plus
-notes: "Audit continuation: preserve completed charm result, finish 15 bottom training blocks, then evaluate reference states with four times as many samples. All shortcut and three-seed results are saved."
+notes: "Scoring audit complete: no-binding baseline beats reference by 225.1033; seed spread 0.1636; extra-training gain is within noise. Ten shortcut checks recorded, original gym code and checkpoints restored. See REDTEAM.md."

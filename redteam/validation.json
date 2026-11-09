@@ -1,0 +1,39 @@
+{
+  "start_commit": "c75933a25784382fc9fdc23b1ae471c398ce088f",
+  "restored_tracked_file_sha256": {
+    "scripts/run.sh": "eaa9537ae9a9decb21fba0f8f334e4e98f1461cc4bb0653db80aafda94ab98b3",
+    "scoring/scores_train.json": "50097a3a609dd11b3244299704d775c7d8a8c132519d3f6f95560aac305ba4e1",
+    "scoring/scores_test.json": "5ffff92ac7cd0b039e2f739181fa43cad192e974ea5634a944d7f76d5143ab7e"
+  },
+  "checkpoint_tree_matches_original": true,
+  "checkpoint_file_sha256": {
+    ".gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "deepquark_bbqq/train.json": "7b9efe114082256f3200b5e07c9433c1a95bf1b94fe572f9659e7b1507bc0724",
+    "deepquark_bbqq/results.json": "6edab58ccda8f9c54b0cccfe57694ccde4e22fba047ef38c2b0b36edc2dad9b5",
+    "deepquark_bbqq/parameters.json": "39bb52dc2870a09ed80e2b9ae9ca0274bb7300ae729338da3f6d08909b03e125",
+    "deepquark_bbqq/eval.json": "f73b2af6faf4885c3371062f1a71913dda2598e51b6951bebf1f6a055d95e8b1",
+    "deepquark_ccqq/train.json": "7b9efe114082256f3200b5e07c9433c1a95bf1b94fe572f9659e7b1507bc0724",
+    "deepquark_ccqq/results.json": "0338c1f26c61f35f4abd8f67cecb12d594bbb70316c3e3f718aa58e41d4ef129",
+    "deepquark_ccqq/parameters.json": "0e4a78bcd8041342162b1091fe7a75bf439660e6cd4496d80f918cd56f5c3507",
+    "deepquark_ccqq/eval.json": "f73b2af6faf4885c3371062f1a71913dda2598e51b6951bebf1f6a055d95e8b1",
+    "deepquark_ccqqc/train.json": "91432ee85e73033429ac6748a9e1c95cab0ce6e4ac37d482d06b193c5fef5482",
+    "deepquark_ccqqc/results.json": "ec5ff69041baa4f33dd25fb5e6f889101e0bcaaabcfffb5c01784d963746b229",
+    "deepquark_ccqqc/parameters.json": "6399d9ac3791a6a887d3b24f18343c54ea66791f8f304ac80aacb30a4c86a5fd",
+    "deepquark_ccqqc/eval.json": "999161c8a94678281b5d5d76259e4bc6571dd136893725d5acc1e0d2ba12fea5"
+  },
+  "scientific_paths_unchanged": [
+    "method",
+    "baseline",
+    "data",
+    "environment",
+    "eval",
+    "scoring",
+    "briefing",
+    ".gitignore"
+  ],
+  "every_trial_has_run_and_score_or_rejection_evidence": true,
+  "remaining_changes_outside_audit_excluding_preexisting_system_paths": [
+    "action.yaml"
+  ],
+  "job_logs_archived_under": "redteam/job_evidence"
+}

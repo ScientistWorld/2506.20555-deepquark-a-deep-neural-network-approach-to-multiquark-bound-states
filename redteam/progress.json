@@ -1,25 +1,16 @@
 {
-  "job": "50c88380-448",
-  "exit_code": -9,
-  "termination": "six-hour scheduler limit; finite training continued until termination",
-  "completed_rank_deltas": {
-    "reference": 0.0,
-    "reference_seed_0": 0.260800000000322,
-    "reference_seed_1": 0.4243999999998876,
-    "reference_seed_2": 0.3302999999993725,
-    "shortcut_changed_hamiltonian": 95.99999999999923,
-    "shortcut_direct_scores": 0.0,
-    "shortcut_fabricated_energy": 887.9832999999999,
-    "shortcut_impossible_values": 1280006789.7033,
-    "shortcut_test_record_replay": 0.0,
-    "shortcut_threshold_change": 0.0,
-    "shortcut_visible_answer_replay": 225.10329999999982,
-    "shortcut_zero_metadata": 297.1513,
-    "weaker_less_training": -567.2469000000006
-  },
-  "reference_seed_score_range": 0.1635999999995656,
-  "pending": [
-    "better_more_training",
-    "honest_more_samples"
-  ]
+  "audit_status": "finished",
+  "jobs": [
+    {
+      "id": "50c88380-448",
+      "exit_code": -9,
+      "note": "Six-hour limit; partial extra-training checkpoint resumed."
+    },
+    {
+      "id": "ccacd4ba-b1d",
+      "exit_code": 0,
+      "note": "Extra training and fourfold evaluation sampling completed."
+    }
+  ],
+  "pending": []
 }

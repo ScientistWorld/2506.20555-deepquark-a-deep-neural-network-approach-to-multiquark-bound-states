@@ -1,0 +1,33 @@
+[hive] This stdout log is managed by Hive.
+[hive] job_id: a82136fc
+[hive] host: node
+[hive] node_id: a3066a3b993c45732d91d1810270caddbc5198c37aefe87124ac7d95
+[hive] user: nexus/user (remote)
+[hive] resource: gpu-2
+[hive] gpus: 1
+[hive] cpus: 1
+[hive] workdir: /home/user
+[hive] timeout_sec: 21600
+[hive] started_at: 2026-11-09 11:37:37 EST
+[hive] command: apptainer exec --nv --containall --cleanenv --env HF_HOME=/home/user/shared/hf_cache --env TRANSFORMERS_CACHE=/home/user/shared/hf_cache --env HF_DATASETS_CACHE=/home/user/shared/hf_cache/datasets --env TORCH_HOME=/home/user/shared/hf_cache/torch --bind /home/user/scratch/AgentWorkspaces/workspaces/2506.20555:/home/user --overlay /home/user/scratch/AgentWorkspaces/workspaces/2506.20555/environment/overlay.img:ro --bind /home/user/scratch/AgentWorkspaces/shared/datasets:/home/user/shared/datasets:ro --bind /home/user/scratch/AgentWorkspaces/shared/models:/home/user/shared/models:ro --bind /home/user/scratch/AgentWorkspaces/shared/hf_cache:/home/user/shared/hf_cache /home/user/scratch/AgentWorkspaces/workspaces/2506.20555/environment/container.sif bash -c 'cd /home/user && bash /home/user/scripts/run.sh'
+SKIP completed reference
+SKIP completed shortcut_visible_answer_replay
+SKIP completed shortcut_fabricated_energy
+SKIP completed shortcut_impossible_values
+SKIP completed shortcut_zero_metadata
+SKIP completed shortcut_test_record_replay
+SKIP completed shortcut_changed_hamiltonian
+SKIP completed shortcut_threshold_change
+SKIP completed shortcut_direct_scores
+START shortcut_null_records
+FINISHED shortcut_null_records exit 1
+START shortcut_empty_records
+FINISHED shortcut_empty_records exit 1
+SKIP completed weaker_less_training
+SKIP completed reference_seed_0
+SKIP completed reference_seed_1
+SKIP completed reference_seed_2
+START better_more_training
+FINISHED better_more_training exit 0
+START honest_more_samples
+FINISHED honest_more_samples exit 0
