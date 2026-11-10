@@ -1,0 +1,98 @@
+{
+  "done": {
+    "crosscheck_ccqq": {
+      "seconds": 45.20403718948364
+    },
+    "crosscheck_ccqqc": {
+      "seconds": 43.855878591537476
+    },
+    "eval_old_pcc_continued": {
+      "seconds": 68.09945106506348
+    },
+    "eval_rt_better_more_training": {
+      "seconds": 131.12519550323486
+    },
+    "eval_rt_reference_seed_0": {
+      "seconds": 68.44601702690125
+    },
+    "eval_rt_reference_seed_1": {
+      "seconds": 70.45968413352966
+    },
+    "eval_rt_reference_seed_2": {
+      "seconds": 69.49223017692566
+    },
+    "eval_rt_weaker_less_training": {
+      "seconds": 132.42791414260864
+    },
+    "exports_old": {
+      "seconds": 517.3855278491974
+    },
+    "exports_redteam": {
+      "seconds": 213.39866042137146
+    },
+    "install_reference": {
+      "seconds": 0.07948732376098633
+    },
+    "noise_old_pcc_continued_101": {
+      "seconds": 40.67886400222778
+    },
+    "noise_old_pcc_continued_202": {
+      "seconds": 35.918988943099976
+    },
+    "noise_reference_101": {
+      "seconds": 97.49574756622314
+    },
+    "noise_reference_202": {
+      "seconds": 95.28691363334656
+    },
+    "noise_reference_303": {
+      "seconds": 94.96847081184387
+    },
+    "noise_rt_better_more_training_101": {
+      "seconds": 68.71583700180054
+    },
+    "noise_rt_better_more_training_202": {
+      "seconds": 74.3879725933075
+    },
+    "official_scoring": {
+      "seconds": 302.0603005886078
+    },
+    "shortcut_abs_sign": {
+      "seconds": 106.03268361091614
+    },
+    "shortcut_bloated": {
+      "seconds": 24.309277057647705
+    },
+    "shortcut_bosonic": {
+      "seconds": 150.08002352714539
+    },
+    "shortcut_corrupt": {
+      "seconds": 16.50782012939453
+    },
+    "shortcut_empty": {
+      "seconds": 16.388925552368164
+    },
+    "shortcut_gaussian": {
+      "seconds": 78.40428471565247
+    },
+    "shortcut_legacy_fabricated": {
+      "seconds": 16.40863823890686
+    },
+    "shortcut_legacy_impossible": {
+      "seconds": 16.38604426383972
+    },
+    "shortcut_legacy_threshold_replay": {
+      "seconds": 16.362096309661865
+    },
+    "shortcut_metadata_claims": {
+      "seconds": 102.92354154586792
+    },
+    "shortcut_noisy": {
+      "seconds": 117.77224683761597
+    },
+    "shortcut_stencil": {
+      "seconds": 136.65810012817383
+    }
+  },
+  "failed": {}
+}

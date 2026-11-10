@@ -1,0 +1,21 @@
+{
+  "system": "ccqqc",
+  "checkpoint": 27,
+  "n_samples": 16384,
+  "sampler": {
+    "step_size": 0.5931415860460396,
+    "accept_spatial": 0.5001983642578125,
+    "accept_discrete": 0.48064881563186646,
+    "accept_spatial_burn": 0.49955374002456665
+  },
+  "export_vs_model_max_abs_logpsi_diff": 0.0,
+  "netket_mean_mev": 5717.789488144734,
+  "gym_mean_mev": 5717.789551317802,
+  "mean_diff_mev": 6.317306836301525e-05,
+  "median_abs_diff_mev": 0.012751859106430175,
+  "p99_abs_diff_mev": 0.37850994858647624,
+  "kinetic_mean_diff_mev": 8.693259271623823e-05,
+  "kinetic_median_abs_diff_mev": 0.012755728036731306,
+  "local_energy_std_mev": 77.13990670961364,
+  "seconds": 34.34299659729004
+}

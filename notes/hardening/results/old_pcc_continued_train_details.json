@@ -1,0 +1,64 @@
+{
+  "slice": "train",
+  "protocol": {
+    "chains": 4096,
+    "samples_per_chain": 128,
+    "thin": 20,
+    "parameter_budget": 10000,
+    "symmetry_tolerance": 1e-06,
+    "repeat_tolerance": 1e-12,
+    "layout_tolerance_gev": 0.0001,
+    "layout_mean_tolerance_gev": 1e-06,
+    "burn_in_steps": 5000,
+    "consistency_tolerance": 1e-08,
+    "rhat_max": 1.2,
+    "mc_error_cap_mev": 5.0
+  },
+  "submissions": {
+    "tcc_al1_binding/deepquark": {
+      "status": "failed",
+      "reason": "missing wavefunction.jaxexport",
+      "trace": ""
+    },
+    "tbb_al1_binding/deepquark": {
+      "status": "failed",
+      "reason": "missing wavefunction.jaxexport",
+      "trace": ""
+    },
+    "pcc_al1_binding/deepquark": {
+      "status": "valid",
+      "backend": "gpu",
+      "file": "/home/user/tmp/hardening/artifacts/old_pcc_continued/deepquark_ccqqc/wavefunction.jaxexport",
+      "gates": {
+        "repeat_determinism": 0.0,
+        "sampler_energy_consistency": 0.0,
+        "layout_max_energy_diff_gev": 3.247726887423141e-08,
+        "layout_mean_energy_diff_gev": 7.929020721247904e-12,
+        "layout_mismatches": 0,
+        "symmetry": {
+          "exchange_QQ": 1.1330953467684182e-31,
+          "exchange_light": 2.9463154532216996e-25,
+          "parity": 8.859277744181285e-32
+        }
+      },
+      "parameter_count": 2948,
+      "fixed_batch": 4096,
+      "step_size": 0.593124156783307,
+      "accept_spatial": 0.49974432587623596,
+      "accept_discrete": 0.4840739369392395,
+      "accept_spatial_burn": 0.49946117401123047,
+      "seconds_sampling": 15.505401372909546,
+      "seconds_energy": 18.210280656814575,
+      "energy_mev_unchecked": 5717.321980574538,
+      "r_hat": 1.0015962364255846,
+      "energy_mev": 5717.321980574538,
+      "binding_raw_mev": -0.6780194254615708,
+      "mc_error_raw_mev": 0.08091306397716602,
+      "kinetic_mev": 854.2170197540024,
+      "local_energy_std_mev": 53.75450401226871,
+      "symmetry_violation": 2.9463154532216996e-25,
+      "bound": true,
+      "seconds": 21.158132791519165
+    }
+  }
+}

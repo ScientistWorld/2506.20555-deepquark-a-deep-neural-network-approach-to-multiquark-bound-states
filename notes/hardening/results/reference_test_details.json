@@ -1,0 +1,124 @@
+{
+  "slice": "test",
+  "protocol": {
+    "chains": 4096,
+    "samples_per_chain": 512,
+    "thin": 20,
+    "parameter_budget": 10000,
+    "symmetry_tolerance": 1e-06,
+    "repeat_tolerance": 1e-12,
+    "layout_tolerance_gev": 0.0001,
+    "layout_mean_tolerance_gev": 1e-06,
+    "burn_in_steps": 5000,
+    "consistency_tolerance": 1e-08,
+    "rhat_max": 1.2,
+    "mc_error_cap_mev": 5.0
+  },
+  "submissions": {
+    "tcc_al1_binding/deepquark": {
+      "status": "valid",
+      "backend": "gpu",
+      "file": "checkpoints/deepquark_ccqq/wavefunction.jaxexport",
+      "gates": {
+        "repeat_determinism": 0.0,
+        "sampler_energy_consistency": 3.552713678800501e-15,
+        "layout_max_energy_diff_gev": 5.523445789634707e-08,
+        "layout_mean_energy_diff_gev": 1.7863692729908065e-11,
+        "layout_mismatches": 0,
+        "symmetry": {
+          "exchange_QQ": 3.700087600120464e-32,
+          "exchange_light": 9.134973022953288e-28,
+          "parity": 4.3222833240187446e-32
+        }
+      },
+      "parameter_count": 1920,
+      "fixed_batch": 4096,
+      "step_size": 0.6824983704113562,
+      "accept_spatial": 0.4998460114002228,
+      "accept_discrete": 0.3844603896141052,
+      "accept_spatial_burn": 0.4999893307685852,
+      "seconds_sampling": 19.118203163146973,
+      "seconds_energy": 24.88966464996338,
+      "energy_mev_unchecked": 3864.514880647725,
+      "r_hat": 1.0155303869995451,
+      "energy_mev": 3864.514880647725,
+      "binding_raw_mev": -13.485119352274978,
+      "mc_error_raw_mev": 0.12641510948517412,
+      "kinetic_mev": 890.1704571239497,
+      "local_energy_std_mev": 61.684413366845995,
+      "symmetry_violation": 9.134973022953288e-28,
+      "bound": true,
+      "seconds": 34.52386689186096
+    },
+    "tbb_al1_binding/deepquark": {
+      "status": "valid",
+      "backend": "gpu",
+      "file": "checkpoints/deepquark_bbqq/wavefunction.jaxexport",
+      "gates": {
+        "repeat_determinism": 0.0,
+        "sampler_energy_consistency": 5.329070518200751e-15,
+        "layout_max_energy_diff_gev": 2.212798833056695e-09,
+        "layout_mean_energy_diff_gev": 1.198079829789478e-12,
+        "layout_mismatches": 0,
+        "symmetry": {
+          "exchange_QQ": 2.1604394032420458e-32,
+          "exchange_light": 1.197598502922141e-29,
+          "parity": 2.917012741452523e-32
+        }
+      },
+      "parameter_count": 1920,
+      "fixed_batch": 4096,
+      "step_size": 0.45549953199073906,
+      "accept_spatial": 0.5000760555267334,
+      "accept_discrete": 0.1812174916267395,
+      "accept_spatial_burn": 0.49999120831489563,
+      "seconds_sampling": 18.907347440719604,
+      "seconds_energy": 24.66951298713684,
+      "energy_mev_unchecked": 10491.406455130022,
+      "r_hat": 1.0020414140820835,
+      "energy_mev": 10491.406455130022,
+      "binding_raw_mev": -152.59354486997836,
+      "mc_error_raw_mev": 0.059128744286033416,
+      "kinetic_mev": 935.2045986658983,
+      "local_energy_std_mev": 60.062359458350656,
+      "symmetry_violation": 1.197598502922141e-29,
+      "bound": true,
+      "seconds": 34.47461700439453
+    },
+    "pcc_al1_binding/deepquark": {
+      "status": "valid",
+      "backend": "gpu",
+      "file": "checkpoints/deepquark_ccqqc/wavefunction.jaxexport",
+      "gates": {
+        "repeat_determinism": 0.0,
+        "sampler_energy_consistency": 0.0,
+        "layout_max_energy_diff_gev": 2.91326935908387e-08,
+        "layout_mean_energy_diff_gev": 7.112474021200854e-12,
+        "layout_mismatches": 0,
+        "symmetry": {
+          "exchange_QQ": 1.1508804488803816e-31,
+          "exchange_light": 1.558282430501405e-24,
+          "parity": 8.70159222998458e-32
+        }
+      },
+      "parameter_count": 2948,
+      "fixed_batch": 4096,
+      "step_size": 0.5970437825989142,
+      "accept_spatial": 0.5007961988449097,
+      "accept_discrete": 0.4783202111721039,
+      "accept_spatial_burn": 0.5007787346839905,
+      "seconds_sampling": 22.61685085296631,
+      "seconds_energy": 29.887809991836548,
+      "energy_mev_unchecked": 5718.667980835867,
+      "r_hat": 1.000869822812668,
+      "energy_mev": 5718.667980835867,
+      "binding_raw_mev": 0.6679808358667287,
+      "mc_error_raw_mev": 0.052093334454956355,
+      "kinetic_mev": 842.6651153235198,
+      "local_energy_std_mev": 62.422054593995824,
+      "symmetry_violation": 1.558282430501405e-24,
+      "bound": false,
+      "seconds": 32.91277885437012
+    }
+  }
+}

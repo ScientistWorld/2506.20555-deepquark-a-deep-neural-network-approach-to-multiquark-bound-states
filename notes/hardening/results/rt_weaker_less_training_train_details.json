@@ -1,0 +1,94 @@
+{
+  "slice": "train",
+  "protocol": {
+    "chains": 4096,
+    "samples_per_chain": 128,
+    "thin": 20,
+    "parameter_budget": 10000,
+    "symmetry_tolerance": 1e-06,
+    "repeat_tolerance": 1e-12,
+    "layout_tolerance_gev": 0.0001,
+    "layout_mean_tolerance_gev": 1e-06,
+    "burn_in_steps": 5000,
+    "consistency_tolerance": 1e-08,
+    "rhat_max": 1.2,
+    "mc_error_cap_mev": 5.0
+  },
+  "submissions": {
+    "tcc_al1_binding/deepquark": {
+      "status": "valid",
+      "backend": "gpu",
+      "file": "/home/user/tmp/hardening/artifacts/rt_weaker_less_training/deepquark_ccqq/wavefunction.jaxexport",
+      "gates": {
+        "repeat_determinism": 0.0,
+        "sampler_energy_consistency": 3.552713678800501e-15,
+        "layout_max_energy_diff_gev": 3.742961496300268e-11,
+        "layout_mean_energy_diff_gev": 9.138089590576826e-15,
+        "layout_mismatches": 0,
+        "symmetry": {
+          "exchange_QQ": 2.618108068410245e-32,
+          "exchange_light": 1.168624907650306e-30,
+          "parity": 2.8745444815460153e-32
+        }
+      },
+      "parameter_count": 1920,
+      "fixed_batch": 4096,
+      "step_size": 1.1807320149311746,
+      "accept_spatial": 0.4995166063308716,
+      "accept_discrete": 0.4460376799106598,
+      "accept_spatial_burn": 0.4996459186077118,
+      "seconds_sampling": 13.052871704101562,
+      "seconds_energy": 15.57164716720581,
+      "energy_mev_unchecked": 4633.963941540118,
+      "r_hat": 1.0255117123252402,
+      "energy_mev": 4633.963941540118,
+      "binding_raw_mev": 755.963941540118,
+      "mc_error_raw_mev": 2.146484800399202,
+      "kinetic_mev": 341.77160771004606,
+      "local_energy_std_mev": 767.8152537619399,
+      "symmetry_violation": 1.168624907650306e-30,
+      "bound": false,
+      "seconds": 25.326316833496094
+    },
+    "tbb_al1_binding/deepquark": {
+      "status": "valid",
+      "backend": "gpu",
+      "file": "/home/user/tmp/hardening/artifacts/rt_weaker_less_training/deepquark_bbqq/wavefunction.jaxexport",
+      "gates": {
+        "repeat_determinism": 0.0,
+        "sampler_energy_consistency": 5.329070518200751e-15,
+        "layout_max_energy_diff_gev": 2.753960615109463e-09,
+        "layout_mean_energy_diff_gev": 8.7286514821594e-13,
+        "layout_mismatches": 0,
+        "symmetry": {
+          "exchange_QQ": 2.2853233597911257e-32,
+          "exchange_light": 2.639843664394197e-31,
+          "parity": 2.69099809163122e-32
+        }
+      },
+      "parameter_count": 1920,
+      "fixed_batch": 4096,
+      "step_size": 0.8018427147823761,
+      "accept_spatial": 0.4997088611125946,
+      "accept_discrete": 0.35197028517723083,
+      "accept_spatial_burn": 0.5000280141830444,
+      "seconds_sampling": 13.23487401008606,
+      "seconds_energy": 15.940306901931763,
+      "energy_mev_unchecked": 10878.282223195885,
+      "r_hat": 1.0065043550302322,
+      "energy_mev": 10878.282223195885,
+      "binding_raw_mev": 234.2822231958853,
+      "mc_error_raw_mev": 0.7807125460042421,
+      "kinetic_mev": 582.1437029905052,
+      "local_energy_std_mev": 418.6231997039997,
+      "symmetry_violation": 2.639843664394197e-31,
+      "bound": false,
+      "seconds": 28.44952893257141
+    },
+    "pcc_al1_binding/deepquark": {
+      "status": "failed",
+      "reason": "missing wavefunction.jaxexport",
+      "trace": ""
+    }
+  }
+}
