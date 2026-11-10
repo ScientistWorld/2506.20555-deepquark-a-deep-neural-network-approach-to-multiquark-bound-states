@@ -1,16 +1,12 @@
 #!/usr/bin/env python3
 """Hardening job: retrain the reference, train variants, build shortcuts, score all.
 
-Three tracks run concurrently (each stage is resumable through marker files):
-  ref     reference DeepQuark (scripts/reproduce.sh, seed 0) for ccqqc, ccqq, bbqq,
-          official scoring of it, then reference seed 1 for ccqq (training-seed noise)
-  better  full-schedule variant (no early stop in stage 2, 5x final-stage batch) for
-          ccqqc and ccqq, reference seed 1 for ccqqc, then (time permitting) bbqq
-  eval    exports of previously trained states, NetKet cross-check, shortcut
-          submissions, evaluator-seed noise, evaluation of the variants.
+Stages run one at a time (a job gets a single CPU; concurrent JAX processes slow
+each other down by an order of magnitude) in priority order.  A stage starts only
+if its estimated duration fits in the remaining job time; finished stages leave a
+marker in tmp/hardening/state, so resubmitting the same job continues the plan.
 
-Usage: python scripts/hardening/driver.py            (all tracks)
-       python scripts/hardening/driver.py <track>    (one track)
+Usage: python scripts/hardening/driver.py
 """
 import json
 import os
@@ -35,7 +31,7 @@ RT_WORK = ROOT / "redteam/work"
 TEST_EVAL = ROOT / "eval/test/evaluate.py"
 TRAIN_EVAL = ROOT / "eval/train/evaluate.py"
 START = float(os.environ.get("HW_START", time.time()))
-BUDGET = 5.6 * 3600
+BUDGET = float(os.environ.get("HW_BUDGET_HOURS", "5.75")) * 3600
 
 SPIN = {"ccqq": "1", "bbqq": "1", "ccqqc": "2.5"}
 PARENT = {"ccqq": "AL1/ccqq(S=1.0_I=0.0)", "bbqq": "AL1/bbqq(S=1.0_I=0.0)", "ccqqc": "AL1/ccqqc(S=2.5_I=0.0)"}
@@ -180,29 +176,6 @@ def ref_system(system, dev):
     run(["bash", "scripts/method.sh"], env=env, logname=f"ref_{system}")
 
 
-def track_ref(dev):
-    for system in ("ccqqc", "ccqq", "bbqq"):
-        base_run(METHOD, system)
-        stage(f"ref_{system}", lambda s=system: ref_system(s, dev))
-    if all((STATE / f"ref_{s}.done").exists() for s in ("ccqqc", "ccqq", "bbqq")):
-        stage("official_scoring", lambda: official_scoring(dev))
-    seed1("ccqq", dev)
-
-
-def seed1(system, dev):
-    stage(f"seed1_{system}", lambda: train_variant("ref_seed1", system, dict(REF_ENV, DQ_SEED="1"), dev),
-          optional_after=4.0 * 3600)
-
-
-def track_better(dev):
-    stage("better_ccqqc", lambda: train_variant("better_full_schedule", "ccqqc", BETTER_ENV, dev))
-    stage("better_ccqq", lambda: train_variant("better_full_schedule", "ccqq", BETTER_ENV, dev),
-          optional_after=2.6 * 3600)
-    seed1("ccqqc", dev)
-    stage("better_bbqq", lambda: train_variant("better_full_schedule", "bbqq", BETTER_ENV, dev),
-          optional_after=3.5 * 3600)
-
-
 # ---------------------------------------------------------------- evaluation
 def export_state(code_dir, system, run_id, irange, variant, dev, extra=None):
     env = {**dev_env(dev), "DQ_EXPORT_DIR": str(ART / variant / f"deepquark_{system}"), **(extra or {})}
@@ -304,74 +277,70 @@ def official_scoring(dev):
         env=env, logname="official")
 
 
-def track_eval(dev):
-    # previous reference (before) and evaluator smoke test
-    stage("exports_old", lambda: exports_old(dev))
-    stage("eval_old_reference", lambda: evaluate("old_reference", dev))
-    stage("crosscheck_ccqq", lambda: crosscheck("ccqq", "2", TEN, "old_reference", dev))
-    # weaker / better / seed variants trained by the red-team audit
-    stage("exports_redteam", lambda: exports_redteam(dev))
-    for variant in ("rt_weaker_less_training", "rt_better_more_training", "rt_reference_seed_0",
-                    "rt_reference_seed_1", "rt_reference_seed_2", "old_pcc_continued"):
-        stage(f"eval_{variant}", lambda v=variant: evaluate(v, dev, slices=("test",)))
-    stage("crosscheck_ccqqc", lambda: crosscheck("ccqqc", "1", "[25, 27, 43]", "old_pcc_continued", dev))
+def plan(dev):
+    """(name, function, estimated minutes, required stages) in priority order."""
+    P = []
+
+    def add(name, fn, minutes, requires=()):
+        P.append((name, fn, minutes, tuple(requires)))
+
+    # 1. evaluator validation on the previously shipped reference (also the 'before' numbers)
+    add("exports_old", lambda: exports_old(dev), 20)
+    add("eval_old_reference", lambda: evaluate("old_reference", dev), 25, ["exports_old"])
+    add("crosscheck_ccqq", lambda: crosscheck("ccqq", "2", TEN, "old_reference", dev), 8, ["exports_old"])
+    # 2. the reference every future attempt is ranked against
+    for system, minutes in (("ccqqc", 55), ("ccqq", 55), ("bbqq", 45)):
+        add(f"ref_{system}", lambda s=system: ref_system(s, dev), minutes)
+    add("official_scoring", lambda: official_scoring(dev), 30, ["ref_ccqqc", "ref_ccqq", "ref_bbqq"])
+    # 3. weaker / longer-trained / seed variants trained by the red-team audit
+    add("exports_redteam", lambda: exports_redteam(dev), 12)
+    add("crosscheck_ccqqc", lambda: crosscheck("ccqqc", "1", "[25, 27, 43]", "old_pcc_continued", dev), 8,
+        ["exports_redteam"])
+    for variant in ("rt_weaker_less_training", "rt_better_more_training", "old_pcc_continued",
+                    "rt_reference_seed_0", "rt_reference_seed_1", "rt_reference_seed_2"):
+        add(f"eval_{variant}", lambda v=variant: evaluate(v, dev, slices=("test",)), 8, ["exports_redteam"])
+    # 4. training-seed repeats and the better variant (full stage-2 schedule, 5x final batch)
+    add("seed1_ccqqc", lambda: train_variant("ref_seed1", "ccqqc", dict(REF_ENV, DQ_SEED="1"), dev), 55)
+    add("better_ccqqc", lambda: train_variant("better_full_schedule", "ccqqc", BETTER_ENV, dev), 130)
+    add("seed1_ccqq", lambda: train_variant("ref_seed1", "ccqq", dict(REF_ENV, DQ_SEED="1"), dev), 55)
+    add("better_ccqq", lambda: train_variant("better_full_schedule", "ccqq", BETTER_ENV, dev), 120)
+    add("eval_better_full_schedule", lambda: evaluate("better_full_schedule", dev), 25,
+        ["better_ccqqc", "better_ccqq"])
+    add("eval_ref_seed1", lambda: evaluate("ref_seed1", dev, slices=("test",)), 15, ["seed1_ccqqc", "seed1_ccqq"])
+    # 5. shortcuts against the new evaluator
     for kind in SHORTCUTS:
-        stage(f"shortcut_{kind}", lambda k=kind: shortcut_stage(k, dev), optional_after=4.5 * 3600)
+        add(f"shortcut_{kind}", lambda k=kind: shortcut_stage(k, dev), 6, ["exports_old"])
+    # 6. evaluator-seed noise (paired re-measurements of the same submissions)
     for seed in (101, 202):
-        stage(f"noise_old_reference_{seed}", lambda s=seed: evaluate(
-            "old_reference", dev, slices=("test",), seed=s, tag=f"old_reference_seed{s}"),
-            optional_after=4.0 * 3600)
-
-    # the fresh reference is scored by the ref track right after training
-    wait_for(["official_scoring"], limit=5.0 * 3600)
-    for seed in (101, 202):
-        stage(f"noise_reference_{seed}", lambda s=seed: evaluate(
+        add(f"noise_reference_{seed}", lambda s=seed: evaluate(
             "reference", dev, slices=("test",), seed=s, root=ROOT / "checkpoints", tag=f"reference_seed{s}"),
-            optional_after=5.0 * 3600)
-
-    wait_for(["better_ccqqc", "better_ccqq", "seed1_ccqqc", "seed1_ccqq"], limit=5.2 * 3600)
-    stage("eval_better_full_schedule", lambda: evaluate("better_full_schedule", dev), optional_after=5.45 * 3600)
-    stage("eval_ref_seed1", lambda: evaluate("ref_seed1", dev, slices=("test",)), optional_after=5.45 * 3600)
-    for seed in (101, 202):
-        stage(f"noise_better_{seed}", lambda s=seed: evaluate(
+            12, ["official_scoring"])
+        add(f"noise_better_{seed}", lambda s=seed: evaluate(
             "better_full_schedule", dev, slices=("test",), seed=s, tag=f"better_full_schedule_seed{s}"),
-            optional_after=5.5 * 3600)
-    wait_for(["better_bbqq"], limit=5.5 * 3600)
-    if (STATE / "better_bbqq.done").exists():
-        (STATE / "eval_better_full_schedule.done").unlink(missing_ok=True)
-        stage("eval_better_full_schedule", lambda: evaluate("better_full_schedule", dev),
-              optional_after=5.6 * 3600)
+            10, ["eval_better_full_schedule"])
+        add(f"noise_old_reference_{seed}", lambda s=seed: evaluate(
+            "old_reference", dev, slices=("test",), seed=s, tag=f"old_reference_seed{s}"), 12, ["exports_old"])
+    # 7. optional
+    add("better_bbqq", lambda: train_variant("better_full_schedule", "bbqq", BETTER_ENV, dev), 110)
+    add("eval_better_full_schedule_bbqq", lambda: evaluate("better_full_schedule", dev), 25, ["better_bbqq"])
+    return P
 
 
 def main():
-    if len(sys.argv) > 1:
-        track, dev = sys.argv[1], int(sys.argv[2])
-        {"ref": track_ref, "better": track_better, "eval": track_eval}[track](dev)
-        return
-    n_gpu = gpu_count()
-    log(f"GPUs visible: {n_gpu}")
+    log(f"GPUs visible: {gpu_count()}; budget {BUDGET / 3600:.2f} h")
     for system in ("ccqqc", "ccqq", "bbqq"):
         base_run(METHOD, system)
-    second = 1 if n_gpu >= 2 else 0
-    env = {"HW_START": str(START)}
-    procs = []
-    for track, dev in (("ref", 0), ("better", second), ("eval", 0)):
-        handle = open(LOGS / f"track_{track}.log", "a")
-        procs.append((track, handle, subprocess.Popen(
-            [sys.executable, __file__, track, str(dev)], stdout=handle, stderr=subprocess.STDOUT,
-            env={**os.environ, **env})))
-        time.sleep(5)
-    while procs:
-        for item in list(procs):
-            track, handle, proc = item
-            if proc.poll() is not None:
-                log(f"track {track} finished rc={proc.returncode}")
-                handle.close()
-                procs.remove(item)
-        time.sleep(30)
-    for track in ("ref", "better", "eval"):
-        print(f"===== track {track} =====")
-        print((LOGS / f"track_{track}.log").read_text()[-6000:])
+    for name, fn, minutes, requires in plan(0):
+        if (STATE / f"{name}.done").exists():
+            continue
+        missing = [r for r in requires if not (STATE / f"{r}.done").exists()]
+        if missing:
+            log(f"skip {name}: requires {missing}")
+            continue
+        if time.time() - START + minutes * 60 > BUDGET:
+            log(f"skip {name}: ~{minutes} min does not fit in the remaining time")
+            continue
+        stage(name, fn)
     summary = {p.stem: json.loads(p.read_text() or "{}") for p in sorted(STATE.glob("*.done"))}
     failed = {p.stem: p.read_text()[:500] for p in sorted(STATE.glob("*.failed"))}
     (OUT / "job_state.json").write_text(json.dumps({"done": summary, "failed": failed}, indent=2))

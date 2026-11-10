@@ -18,12 +18,14 @@
 - Experiments: tcc (0.45), tbb (0.35), pcc (0.2) — revisit weights after noise numbers.
 
 ## Job (scripts/hardening/driver.py, resumable via tmp/hardening/state/*.done)
-- ref track GPU0: ref_ccqqc, ref_ccqq, ref_bbqq (reproduce.sh, seed 0, authors' defaults),
-  official_scoring (scores_train/test/scores.json), seed1_ccqq.
-- better track GPU1: better_ccqqc, better_ccqq (full stage-2 schedule, 5x final batch),
-  seed1_ccqqc, better_bbqq (if time).
-- eval track GPU0: old_reference exports+eval (before numbers), NetKet crosscheck,
-  redteam states (weaker, more-training, seeds 0-2), shortcuts, evaluator-seed noise.
+- Job d5c89f5c (2 GPUs, 3 concurrent tracks) cancelled at 40 min: container lacked
+  `flatbuffers` (jax.export serialization) -> added to setup.sh + job-only fallback
+  tmp/pydeps in run.sh; and 3 JAX processes on the job's single CPU ran ~12x slower
+  (4 s/iter vs 0.33 s/iter) -> driver is now sequential, 1 GPU.
+- Plan order (stage skipped if its estimate does not fit the remaining 5.75 h; rerun the
+  same job to continue): old-reference exports + eval + NetKet crosscheck; ref_ccqqc,
+  ref_ccqq, ref_bbqq; official_scoring; redteam exports + evals; seed1_ccqqc, better_ccqqc,
+  seed1_ccqq, better_ccqq, their evals; shortcuts; evaluator-seed noise; better_bbqq.
 - Results: notes/hardening/results/*.json (+ *_details.json), crosscheck_*.json, job_state.json.
   Logs: tmp/hardening/logs/.
 
