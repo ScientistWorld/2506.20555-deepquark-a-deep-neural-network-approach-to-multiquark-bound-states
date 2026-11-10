@@ -1,35 +1,57 @@
 {
   "experiments": {
     "tcc_al1_binding": {
-      "description": "AL1 isoscalar vector doubly charmed tetraquark Tcc, Table I.",
+      "description": "AL1 isoscalar vector doubly charmed tetraquark Tcc (ccqbarqbar, I(J^P)=0(1+)), Table I. Threshold D D* = 3878 MeV.",
       "weight": 0.45,
       "primary_metric": "binding_mev",
       "metrics": {
-        "energy_mev": {"higher_is_better": false, "coefficient": -0.2, "description": "Variational total energy of the AL1 Tcc state in MeV."},
-        "binding_mev": {"higher_is_better": false, "coefficient": -1.0, "description": "Energy relative to the fixed two-meson threshold; more negative means stronger binding."},
-        "mc_error_mev": {"higher_is_better": false, "coefficient": -0.2, "description": "Monte Carlo standard error of the estimated energy in MeV."},
-        "parameter_count": {"higher_is_better": false, "coefficient": -0.2, "description": "Number of trainable ansatz parameters used for the scored artifact."},
-        "color_3bar3": {"higher_is_better": true, "coefficient": 0.0, "description": "Reported antitriplet-triplet color-channel proportion for the tetraquark state; recorded as a diagnostic, not an optimization target."},
-        "color_6bar6": {"higher_is_better": true, "coefficient": 0.0, "description": "Reported sextet-antisextet color-channel proportion for the tetraquark state; recorded as a diagnostic, not an optimization target."}
+        "binding_mev": {
+          "higher_is_better": false,
+          "coefficient": 1.0,
+          "description": "Variational energy minus the fixed lowest two-hadron threshold, in MeV, measured by the evaluator from fresh samples of the submitted wavefunction. More negative is stronger binding. 0 means no bound state; failed or unbound submissions get 0."
+        },
+        "mc_error_mev": {
+          "higher_is_better": false,
+          "coefficient": 0.1,
+          "description": "Monte Carlo standard error of that energy (evaluator's sampler, fixed sample count), in MeV, capped at 5.0. Failed or unbound submissions get the cap."
+        },
+        "energy_mev": {
+          "higher_is_better": false,
+          "coefficient": 0.0,
+          "description": "Total variational energy in MeV (diagnostic; ranked through binding_mev)."
+        },
+        "parameter_count": {
+          "higher_is_better": false,
+          "coefficient": 0.0,
+          "description": "Stored constants of the submitted wavefunction in float64 equivalents (diagnostic; a budget of 10000 is enforced as a validity gate)."
+        },
+        "valid": {
+          "higher_is_better": true,
+          "coefficient": 0.0,
+          "description": "1 if the submission passed every evaluator gate, else 0 (diagnostic)."
+        },
+        "color_3bar3": {
+          "higher_is_better": true,
+          "coefficient": 0.0,
+          "description": "Sampled antitriplet-triplet color-channel proportion (diagnostic, not an optimization target)."
+        },
+        "color_6bar6": {
+          "higher_is_better": true,
+          "coefficient": 0.0,
+          "description": "Sampled sextet-antisextet color-channel proportion (diagnostic, not an optimization target)."
+        }
       },
       "results": {
         "threshold_baseline": {
           "type": "baseline",
           "energy_mev": 3878.0,
           "binding_mev": 0.0,
-          "mc_error_mev": 0.0,
-          "parameter_count": 0.0,
-          "color_3bar3": 0.0,
-          "color_6bar6": 0.0
+          "mc_error_mev": 5.0
         },
         "gem": {
           "type": "baseline",
           "energy_mev": 3864.0,
-          "binding_mev": -14.0,
-          "mc_error_mev": 0.0,
-          "parameter_count": 0.0,
-          "color_3bar3": 0.55,
-          "color_6bar6": 0.45
+          "binding_mev": -14.0
         },
         "deepquark": {
           "type": "proposed",
@@ -40,38 +62,61 @@
           "color_3bar3": 0.55,
           "color_6bar6": 0.45
         }
-      }
+      },
+      "_note": "Paper rows are the published numbers (deepquark: DeepQuark, gem: Gaussian expansion method). mc_error_mev 0.1 is the paper's stated upper bound; parameter_count 1857/2921 is the size of the authors' released default network, not a number printed in the paper. threshold_baseline is the evaluator's fixed no-binding row."
     },
     "tbb_al1_binding": {
-      "description": "AL1 isoscalar vector doubly bottom tetraquark Tbb, Table I.",
+      "description": "AL1 isoscalar vector doubly bottom tetraquark Tbb (bbqbarqbar, I(J^P)=0(1+)), Table I. Threshold B B* = 10644 MeV.",
       "weight": 0.35,
       "primary_metric": "binding_mev",
       "metrics": {
-        "energy_mev": {"higher_is_better": false, "coefficient": -0.2, "description": "Variational total energy of the AL1 Tbb state in MeV."},
-        "binding_mev": {"higher_is_better": false, "coefficient": -1.0, "description": "Energy relative to the fixed two-meson threshold; more negative means stronger binding."},
-        "mc_error_mev": {"higher_is_better": false, "coefficient": -0.2, "description": "Monte Carlo standard error of the estimated energy in MeV."},
-        "parameter_count": {"higher_is_better": false, "coefficient": -0.2, "description": "Number of trainable ansatz parameters used for the scored artifact."},
-        "color_3bar3": {"higher_is_better": true, "coefficient": 0.0, "description": "Reported antitriplet-triplet color-channel proportion for the tetraquark state; recorded as a diagnostic, not an optimization target."},
-        "color_6bar6": {"higher_is_better": true, "coefficient": 0.0, "description": "Reported sextet-antisextet color-channel proportion for the tetraquark state; recorded as a diagnostic, not an optimization target."}
+        "binding_mev": {
+          "higher_is_better": false,
+          "coefficient": 1.0,
+          "description": "Variational energy minus the fixed lowest two-hadron threshold, in MeV, measured by the evaluator from fresh samples of the submitted wavefunction. More negative is stronger binding. 0 means no bound state; failed or unbound submissions get 0."
+        },
+        "mc_error_mev": {
+          "higher_is_better": false,
+          "coefficient": 0.1,
+          "description": "Monte Carlo standard error of that energy (evaluator's sampler, fixed sample count), in MeV, capped at 5.0. Failed or unbound submissions get the cap."
+        },
+        "energy_mev": {
+          "higher_is_better": false,
+          "coefficient": 0.0,
+          "description": "Total variational energy in MeV (diagnostic; ranked through binding_mev)."
+        },
+        "parameter_count": {
+          "higher_is_better": false,
+          "coefficient": 0.0,
+          "description": "Stored constants of the submitted wavefunction in float64 equivalents (diagnostic; a budget of 10000 is enforced as a validity gate)."
+        },
+        "valid": {
+          "higher_is_better": true,
+          "coefficient": 0.0,
+          "description": "1 if the submission passed every evaluator gate, else 0 (diagnostic)."
+        },
+        "color_3bar3": {
+          "higher_is_better": true,
+          "coefficient": 0.0,
+          "description": "Sampled antitriplet-triplet color-channel proportion (diagnostic, not an optimization target)."
+        },
+        "color_6bar6": {
+          "higher_is_better": true,
+          "coefficient": 0.0,
+          "description": "Sampled sextet-antisextet color-channel proportion (diagnostic, not an optimization target)."
+        }
       },
       "results": {
         "threshold_baseline": {
           "type": "baseline",
           "energy_mev": 10644.0,
           "binding_mev": 0.0,
-          "mc_error_mev": 0.0,
-          "parameter_count": 0.0,
-          "color_3bar3": 0.0,
-          "color_6bar6": 0.0
+          "mc_error_mev": 5.0
         },
         "gem": {
           "type": "baseline",
-          "energy_mev": 10492.0,
-          "binding_mev": -152.0,
-          "mc_error_mev": 0.0,
-          "parameter_count": 0.0,
-          "color_3bar3": 0.97,
-          "color_6bar6": 0.03
+          "energy_mev": 10493.0,
+          "binding_mev": -152.0
         },
         "deepquark": {
           "type": "proposed",
@@ -82,31 +127,61 @@
           "color_3bar3": 0.97,
           "color_6bar6": 0.03
         }
-      }
+      },
+      "_note": "Paper rows are the published numbers (deepquark: DeepQuark, gem: Gaussian expansion method). mc_error_mev 0.1 is the paper's stated upper bound; parameter_count 1857/2921 is the size of the authors' released default network, not a number printed in the paper. threshold_baseline is the evaluator's fixed no-binding row."
     },
     "pcc_al1_binding": {
-      "description": "AL1 isoscalar S=5/2 triply heavy pentaquark Pccbar, Table II.",
+      "description": "AL1 isoscalar S=5/2 triply heavy pentaquark Pccbar (ccqq cbar, I(J^P)=0(5/2-)), Table II. Threshold Dbar* Xi_cc* = 5718 MeV.",
       "weight": 0.2,
       "primary_metric": "binding_mev",
       "metrics": {
-        "energy_mev": {"higher_is_better": false, "coefficient": -0.2, "description": "Variational total energy of the AL1 Pccbar state in MeV."},
-        "binding_mev": {"higher_is_better": false, "coefficient": -1.0, "description": "Energy relative to the fixed baryon-meson threshold; more negative means stronger binding."},
-        "mc_error_mev": {"higher_is_better": false, "coefficient": -0.2, "description": "Monte Carlo standard error of the estimated energy in MeV."},
-        "parameter_count": {"higher_is_better": false, "coefficient": -0.2, "description": "Number of trainable ansatz parameters used for the scored artifact."},
-        "color_3bar3": {"higher_is_better": true, "coefficient": 0.0, "description": "Reported antitriplet-antitriplet-antitriplet color-channel proportion for the pentaquark state; recorded as a diagnostic, not an optimization target."},
-        "color_3bar6": {"higher_is_better": true, "coefficient": 0.0, "description": "Reported antitriplet-sextet-antitriplet color-channel proportion for the pentaquark state; recorded as a diagnostic, not an optimization target."},
-        "color_6bar3": {"higher_is_better": true, "coefficient": 0.0, "description": "Reported sextet-antitriplet-antitriplet color-channel proportion for the pentaquark state; recorded as a diagnostic, not an optimization target."}
+        "binding_mev": {
+          "higher_is_better": false,
+          "coefficient": 1.0,
+          "description": "Variational energy minus the fixed lowest two-hadron threshold, in MeV, measured by the evaluator from fresh samples of the submitted wavefunction. More negative is stronger binding. 0 means no bound state; failed or unbound submissions get 0."
+        },
+        "mc_error_mev": {
+          "higher_is_better": false,
+          "coefficient": 0.1,
+          "description": "Monte Carlo standard error of that energy (evaluator's sampler, fixed sample count), in MeV, capped at 5.0. Failed or unbound submissions get the cap."
+        },
+        "energy_mev": {
+          "higher_is_better": false,
+          "coefficient": 0.0,
+          "description": "Total variational energy in MeV (diagnostic; ranked through binding_mev)."
+        },
+        "parameter_count": {
+          "higher_is_better": false,
+          "coefficient": 0.0,
+          "description": "Stored constants of the submitted wavefunction in float64 equivalents (diagnostic; a budget of 10000 is enforced as a validity gate)."
+        },
+        "valid": {
+          "higher_is_better": true,
+          "coefficient": 0.0,
+          "description": "1 if the submission passed every evaluator gate, else 0 (diagnostic)."
+        },
+        "color_3bar3": {
+          "higher_is_better": true,
+          "coefficient": 0.0,
+          "description": "Sampled (QQ)3bar (qq)3bar color-channel proportion (diagnostic, not an optimization target)."
+        },
+        "color_3bar6": {
+          "higher_is_better": true,
+          "coefficient": 0.0,
+          "description": "Sampled (QQ)3bar (qq)6 color-channel proportion (diagnostic, not an optimization target)."
+        },
+        "color_6bar3": {
+          "higher_is_better": true,
+          "coefficient": 0.0,
+          "description": "Sampled (QQ)6 (qq)3bar color-channel proportion (diagnostic, not an optimization target)."
+        }
       },
       "results": {
         "threshold_baseline": {
           "type": "baseline",
           "energy_mev": 5718.0,
           "binding_mev": 0.0,
-          "mc_error_mev": 0.0,
-          "parameter_count": 0.0,
-          "color_3bar3": 0.0,
-          "color_3bar6": 0.0,
-          "color_6bar3": 0.0
+          "mc_error_mev": 5.0
         },
         "deepquark": {
           "type": "proposed",
@@ -118,7 +193,8 @@
           "color_3bar6": 0.73,
           "color_6bar3": 0.0
         }
-      }
+      },
+      "_note": "Paper rows are the published numbers (deepquark: DeepQuark, gem: Gaussian expansion method). mc_error_mev 0.1 is the paper's stated upper bound; parameter_count 1857/2921 is the size of the authors' released default network, not a number printed in the paper. threshold_baseline is the evaluator's fixed no-binding row."
     }
   }
 }

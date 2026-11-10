@@ -3,10 +3,11 @@
 
 Three tracks run concurrently (each stage is resumable through marker files):
   ref     reference DeepQuark (scripts/reproduce.sh, seed 0) for ccqqc, ccqq, bbqq,
-          then reference seed 1 for ccqqc and ccqq (training-seed noise)
-  better  full-schedule variant (no early stop in stage 2, 5x final-stage batch)
+          official scoring of it, then reference seed 1 for ccqq (training-seed noise)
+  better  full-schedule variant (no early stop in stage 2, 5x final-stage batch) for
+          ccqqc and ccqq, reference seed 1 for ccqqc, then (time permitting) bbqq
   eval    exports of previously trained states, NetKet cross-check, shortcut
-          submissions, evaluator-seed noise, and finally the official scoring.
+          submissions, evaluator-seed noise, evaluation of the variants.
 
 Usage: python scripts/hardening/driver.py            (all tracks)
        python scripts/hardening/driver.py <track>    (one track)
@@ -115,6 +116,44 @@ def wait_for(names, limit):
 
 
 # ---------------------------------------------------------------- training
+def run_ids(code_dir, system, need_train_json=False):
+    parent = Path(code_dir) / PARENT[system]
+    if not parent.is_dir():
+        return []
+    return sorted(int(d.name) for d in parent.iterdir()
+                  if d.is_dir() and d.name.isdigit() and (not need_train_json or (d / "train.json").exists()))
+
+
+def base_run(code_dir, system):
+    """Largest run id that existed before this hardening job started training (recorded once)."""
+    path = STATE / "base_runs.json"
+    data = json.loads(path.read_text()) if path.exists() else {}
+    key = f"{code_dir}:{system}"
+    if key not in data:
+        ids = run_ids(code_dir, system)
+        data[key] = max(ids) if ids else 0
+        path.write_text(json.dumps(data, indent=2))
+    return data[key]
+
+
+def resume_env(code_dir, system):
+    """If this job already finished training a run, skip retraining (and re-evaluation when complete)."""
+    done = [r for r in run_ids(code_dir, system, need_train_json=True) if r > base_run(code_dir, system)]
+    if not done:
+        return {}
+    rid = max(done)
+    env = {"DQ_SKIP_TRAIN": "1", "DQ_RUN_ID": str(rid)}
+    res = Path(code_dir) / PARENT[system] / str(rid) / "results.json"
+    try:
+        results = json.loads(res.read_text())
+        if len(results) >= 10 and all(len(v) >= 2 for v in results.values()):
+            env["DQ_SKIP_EVAL"] = "1"
+    except (OSError, json.JSONDecodeError):
+        pass
+    log(f"resume {code_dir} {system} from run {rid}: {env}")
+    return env
+
+
 def train_variant(variant, system, env, dev):
     work = WORK / variant / "DeepQuark"
     if not work.exists():
@@ -124,23 +163,44 @@ def train_variant(variant, system, env, dev):
     full.update({"JAX_PLATFORM_NAME": "gpu", "DQ_CODE_DIR": str(work), "DQ_POTENTIAL": "AL1",
                  "DQ_QUARKS": system, "DQ_SPIN": SPIN[system], "DQ_ISOSPIN": "0",
                  "DQ_ARTIFACT_NAME": f"deepquark_{system}", "DQ_ARTIFACT_ROOT": str(ART / variant)})
+    full.update(resume_env(work, system))
     run(["bash", "scripts/method.sh"], env=full, logname=f"{variant}_{system}")
+
+
+def ref_system(system, dev):
+    resume = resume_env(METHOD, system)
+    if not resume:
+        run(["bash", "scripts/reproduce.sh"],
+            env={**dev_env(dev), "DQ_SYSTEMS": system, "DQ_SKIP_EVALUATE": "1"}, logname=f"ref_{system}")
+        return
+    # training already finished in an earlier attempt: evaluate/export with the same settings
+    env = {**REF_ENV, **dev_env(dev), **resume, "JAX_PLATFORM_NAME": "gpu", "DQ_POTENTIAL": "AL1",
+           "DQ_QUARKS": system, "DQ_SPIN": SPIN[system], "DQ_ISOSPIN": "0",
+           "DQ_ARTIFACT_NAME": f"deepquark_{system}"}
+    run(["bash", "scripts/method.sh"], env=env, logname=f"ref_{system}")
 
 
 def track_ref(dev):
     for system in ("ccqqc", "ccqq", "bbqq"):
-        stage(f"ref_{system}", lambda s=system: run(
-            ["bash", "scripts/reproduce.sh"],
-            env={**dev_env(dev), "DQ_SYSTEMS": s, "DQ_SKIP_EVALUATE": "1"}, logname=f"ref_{s}"))
-    for system in ("ccqqc", "ccqq"):
-        stage(f"seed1_{system}", lambda s=system: train_variant("ref_seed1", s, dict(REF_ENV, DQ_SEED="1"), dev),
-              optional_after=3.6 * 3600)
+        base_run(METHOD, system)
+        stage(f"ref_{system}", lambda s=system: ref_system(s, dev))
+    if all((STATE / f"ref_{s}.done").exists() for s in ("ccqqc", "ccqq", "bbqq")):
+        stage("official_scoring", lambda: official_scoring(dev))
+    seed1("ccqq", dev)
+
+
+def seed1(system, dev):
+    stage(f"seed1_{system}", lambda: train_variant("ref_seed1", system, dict(REF_ENV, DQ_SEED="1"), dev),
+          optional_after=4.0 * 3600)
 
 
 def track_better(dev):
-    for system in ("ccqqc", "ccqq", "bbqq"):
-        stage(f"better_{system}", lambda s=system: train_variant("better_full_schedule", s, BETTER_ENV, dev),
-              optional_after=3.3 * 3600 if system == "bbqq" else 2.4 * 3600)
+    stage("better_ccqqc", lambda: train_variant("better_full_schedule", "ccqqc", BETTER_ENV, dev))
+    stage("better_ccqq", lambda: train_variant("better_full_schedule", "ccqq", BETTER_ENV, dev),
+          optional_after=2.6 * 3600)
+    seed1("ccqqc", dev)
+    stage("better_bbqq", lambda: train_variant("better_full_schedule", "bbqq", BETTER_ENV, dev),
+          optional_after=3.5 * 3600)
 
 
 # ---------------------------------------------------------------- evaluation
@@ -202,8 +262,8 @@ def crosscheck(system, run_id, irange, variant, dev):
          "--n", run_id, "--irange", irange], cwd=METHOD, env=env, logname=f"crosscheck_{system}")
 
 
-SHORTCUTS = ["legacy_fabricated", "legacy_impossible", "corrupt", "empty", "bloated", "metadata_claims",
-             "abs_sign", "noisy", "bosonic", "gaussian"]
+SHORTCUTS = ["legacy_threshold_replay", "legacy_fabricated", "legacy_impossible", "corrupt", "empty", "bloated",
+             "metadata_claims", "abs_sign", "noisy", "bosonic", "gaussian", "stencil"]
 
 
 def build_shortcut(kind, dev):
@@ -245,35 +305,37 @@ def official_scoring(dev):
 
 
 def track_eval(dev):
+    # previous reference (before) and evaluator smoke test
     stage("exports_old", lambda: exports_old(dev))
     stage("eval_old_reference", lambda: evaluate("old_reference", dev))
     stage("crosscheck_ccqq", lambda: crosscheck("ccqq", "2", TEN, "old_reference", dev))
+    # weaker / better / seed variants trained by the red-team audit
     stage("exports_redteam", lambda: exports_redteam(dev))
+    for variant in ("rt_weaker_less_training", "rt_better_more_training", "rt_reference_seed_0",
+                    "rt_reference_seed_1", "rt_reference_seed_2", "old_pcc_continued"):
+        stage(f"eval_{variant}", lambda v=variant: evaluate(v, dev, slices=("test",)))
     stage("crosscheck_ccqqc", lambda: crosscheck("ccqqc", "1", "[25, 27, 43]", "old_pcc_continued", dev))
-    for variant in ("old_pcc_continued", "rt_reference_seed_0", "rt_reference_seed_1", "rt_reference_seed_2",
-                    "rt_better_more_training", "rt_weaker_less_training"):
-        stage(f"eval_{variant}", lambda v=variant: evaluate(v, dev))
     for kind in SHORTCUTS:
-        stage(f"shortcut_{kind}", lambda k=kind: shortcut_stage(k, dev))
-    for seed in (101, 202, 303):
+        stage(f"shortcut_{kind}", lambda k=kind: shortcut_stage(k, dev), optional_after=4.5 * 3600)
+    for seed in (101, 202):
         stage(f"noise_old_reference_{seed}", lambda s=seed: evaluate(
-            "old_reference", dev, slices=("test",), seed=s, tag=f"old_reference_seed{s}"))
+            "old_reference", dev, slices=("test",), seed=s, tag=f"old_reference_seed{s}"),
+            optional_after=4.0 * 3600)
 
-    # official scoring of the freshly trained reference
-    wait_for([f"ref_{s}" for s in ("ccqqc", "ccqq", "bbqq")], limit=5.0 * 3600)
-    stage("official_scoring", lambda: official_scoring(dev))
-    for seed in (101, 202, 303):
+    # the fresh reference is scored by the ref track right after training
+    wait_for(["official_scoring"], limit=5.0 * 3600)
+    for seed in (101, 202):
         stage(f"noise_reference_{seed}", lambda s=seed: evaluate(
             "reference", dev, slices=("test",), seed=s, root=ROOT / "checkpoints", tag=f"reference_seed{s}"),
-            optional_after=5.3 * 3600)
+            optional_after=5.0 * 3600)
 
     wait_for(["better_ccqqc", "better_ccqq", "seed1_ccqqc", "seed1_ccqq"], limit=5.2 * 3600)
-    for variant in ("better_full_schedule", "ref_seed1"):
-        stage(f"eval_{variant}", lambda v=variant: evaluate(v, dev), optional_after=5.45 * 3600)
-    for seed in (101, 202, 303):
+    stage("eval_better_full_schedule", lambda: evaluate("better_full_schedule", dev), optional_after=5.45 * 3600)
+    stage("eval_ref_seed1", lambda: evaluate("ref_seed1", dev, slices=("test",)), optional_after=5.45 * 3600)
+    for seed in (101, 202):
         stage(f"noise_better_{seed}", lambda s=seed: evaluate(
             "better_full_schedule", dev, slices=("test",), seed=s, tag=f"better_full_schedule_seed{s}"),
-            optional_after=5.45 * 3600)
+            optional_after=5.5 * 3600)
     wait_for(["better_bbqq"], limit=5.5 * 3600)
     if (STATE / "better_bbqq.done").exists():
         (STATE / "eval_better_full_schedule.done").unlink(missing_ok=True)
@@ -288,6 +350,8 @@ def main():
         return
     n_gpu = gpu_count()
     log(f"GPUs visible: {n_gpu}")
+    for system in ("ccqqc", "ccqq", "bbqq"):
+        base_run(METHOD, system)
     second = 1 if n_gpu >= 2 else 0
     env = {"HW_START": str(START)}
     procs = []

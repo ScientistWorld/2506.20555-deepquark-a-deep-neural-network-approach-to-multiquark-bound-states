@@ -15,8 +15,17 @@ fresh samples of the submitted wavefunction.
 
 A submission that is missing, malformed, outside the physical sector,
 non-deterministic, over the parameter budget, non-finite, unconverged or
-physically implausible is scored as failed: it receives the no-bound-state
-value ``binding_mev = 0`` and ``valid = 0``.
+physically implausible is scored as failed: it receives the worst value of
+every scored metric (``binding_mev = 0``, ``mc_error_mev`` at its cap) and
+``valid = 0``.  A valid submission that finds no bound state (energy at or
+above the threshold) has failed the task and gets the same scored values.
+
+The submitted function is never shown more than one row of the same sample in
+one call: local energies are evaluated in a sample-transposed layout (each
+call holds one stencil point for each of 4096 different samples), so a
+function cannot recognise finite-difference stencils or discrete-channel
+probes.  The values it returns there must agree with the values it returned
+to the sampler and with a re-evaluation in the natural layout.
 """
 
 from __future__ import annotations
@@ -26,7 +35,9 @@ import json
 import math
 import os
 import re
+import subprocess
 import sys
+import tempfile
 import time
 import traceback
 from pathlib import Path
@@ -57,15 +68,20 @@ EXTRA_BURN_STEPS = 1000          # burn-in after adaptation, fixed step size
 INITIAL_STEP = 0.5               # GeV^-1
 INITIAL_SPREAD = 1.5             # GeV^-1
 CALL_BATCH = 4096                # every call of a submission sees this many rows
-ENERGY_CHUNK = 1024              # samples per local-energy chunk
-ENERGY_GROUP = 16                # chunks per compiled call
+ENERGY_CHUNK = CALL_BATCH        # samples per local-energy chunk (one row per sample per call)
+ENERGY_GROUP = 8                 # chunks per compiled call
 FD_H_MIN, FD_H_MAX = 0.5e-3, 1.5e-3   # finite-difference step range, GeV^-1
 SYM_SAMPLES = 65536
 SYM_TOL = 1.0e-6                 # max squared relative L2 symmetry violation
-DET_TOL = 1.0e-12                # max |delta log psi| across call layouts
+DET_TOL = 1.0e-12                # max |delta log psi| between repeated identical calls
+LAYOUT_ABS_TOL = 1.0e-6          # GeV; max local-energy difference between call layouts
+LAYOUT_REL_TOL = 1.0e-9
+CONSIST_TOL = 1.0e-8             # max |log|psi|| difference, sampler vs energy pass
 RHAT_MAX = 1.2
-PARAM_BUDGET = 10000
+PARAM_BUDGET = 10000             # stored constants, counted in float64 equivalents (8 bytes)
+MC_ERROR_CAP_MEV = 5.0           # worst scored Monte Carlo error (also given to failed / unbound runs)
 FILE_NAME = "wavefunction.jaxexport"
+SUBMISSION_TIMEOUT = 3600        # seconds per (system, method); each runs in its own process
 MAX_FILE_BYTES = 64 * 1024 * 1024
 
 # --------------------------------------------------------------------------
@@ -250,26 +266,28 @@ def _numel(shape_text: str) -> tuple[int, int]:
 
 
 def count_constants(module_text: str) -> int:
-    """Number of stored constant values in the submitted program.
+    """Stored constant data of the submitted program, in float64 equivalents.
 
-    Every non-splat dense constant contributes its element count; a splat
-    contributes one value.  Trainable weights baked into an exported
+    Every dense constant contributes its storage in bytes (a splat stores one
+    element); the total is divided by 8, so a float64 weight counts as one
+    parameter and packing several low-precision values into one wide constant
+    does not reduce the count.  Trainable weights baked into an exported
     wavefunction are counted here, as are any other stored tables.
     """
-    total = 0
+    total_bytes = 0
     for literal, shape in re.findall(r"dense<([^>]*)>\s*:\s*tensor<([^>]*)>", module_text):
         numel, size = _numel(shape)
         lit = literal.strip()
-        if lit.startswith("["):
-            total += numel
-        elif lit.startswith('"0x') or lit.startswith('"0X'):
-            nbytes = (len(lit.strip('"')) - 2) // 2
-            total += 1 if nbytes <= size else numel
+        if lit.startswith('"0x') or lit.startswith('"0X'):
+            total_bytes += max(size, (len(lit.strip('"')) - 2) // 2)
+        elif lit.startswith("["):
+            total_bytes += numel * size
         else:
-            total += 1
+            total_bytes += size
     for _, shape in re.findall(r"dense_resource<([^>]*)>\s*:\s*tensor<([^>]*)>", module_text):
-        total += _numel(shape)[0]
-    return total
+        numel, size = _numel(shape)
+        total_bytes += numel * size
+    return int(math.ceil(total_bytes / 8.0))
 
 
 def load_submission(path: Path, cfg: dict) -> dict:
@@ -397,11 +415,11 @@ def make_sampler(call, cfg):
         def outer(state, k):
             ks = jax.random.split(k, THIN)
             state, (acc1, acc2) = lax.scan(one_step, state, ks)
-            return state, (state[0], state[1], jnp.mean(acc1), jnp.mean(acc2))
+            return state, (state[0], state[1], state[2], jnp.mean(acc1), jnp.mean(acc2))
 
         keys = jax.random.split(key, SAMPLES_PER_CHAIN)
-        state, (Rs, as_, acc1, acc2) = lax.scan(outer, (R, a, lp, sigma), keys)
-        return Rs, as_, jnp.mean(acc1), jnp.mean(acc2)
+        state, (Rs, as_, lps, acc1, acc2) = lax.scan(outer, (R, a, lp, sigma), keys)
+        return Rs, as_, lps, jnp.mean(acc1), jnp.mean(acc2)
 
     def sample(key):
         k_init, k_adapt, k_burn, k_samp = jax.random.split(key, 4)
@@ -413,10 +431,10 @@ def make_sampler(call, cfg):
             acc1 = float(acc1)
             sigma = float(np.clip(sigma * math.exp(acc1 - 0.5), 1e-4, 50.0))
         R, a, lp, acc_b1, acc_b2 = run_burn(R, a, lp, sigma, k_burn)
-        Rs, as_, acc1, acc2 = run_samples(R, a, lp, sigma, k_samp)
+        Rs, as_, lps, acc1, acc2 = run_samples(R, a, lp, sigma, k_samp)
         stats = {"step_size": sigma, "accept_spatial": float(acc1), "accept_discrete": float(acc2),
                  "accept_spatial_burn": float(acc_b1)}
-        return Rs, as_, stats  # (S, C, 3n), (S, C)
+        return Rs, as_, lps, stats  # (S, C, 3n), (S, C), (S, C)
 
     return sample
 
@@ -441,16 +459,25 @@ def _expm1c(d):
     return re_part + 1j * im_part
 
 
-def make_energy_fns(cfg, rows_raw):
+def make_energy_fns(cfg, call, rows_raw):
+    """Local energies E_L = (H psi)(R, a) / psi(R, a) of sampled configurations.
+
+    For each sample the rows are: the configuration itself, 6n finite-difference
+    stencil points (randomly rotated axes, random step), and the same coordinates
+    in every discrete channel (in a random per-sample order).  In the main pass
+    the (M, K) rows of M = CALL_BATCH samples are transposed so that each call of
+    the submission holds one row of each of M different samples.
+    """
     n, A = cfg["n"], cfg["n_states"]
     onehot = jnp.asarray(cfg["onehot"])
     masses = jnp.asarray(cfg["masses"])
     K = 1 + 6 * n + A
+    dim = cfg["dim"]
 
     def build_rows(R, a, key):
-        """R (M, n, 3), a (M,) -> rows (M*K, dim), h (M,)."""
+        """R (M, n, 3), a (M,) -> rows (M, K, dim), h (M,), order (M, A)."""
         M = R.shape[0]
-        kh, kq = jax.random.split(key)
+        kh, kq, ko = jax.random.split(key, 3)
         h = jax.random.uniform(kh, (M,), minval=FD_H_MIN, maxval=FD_H_MAX)
         Q = _rotations(kq, (M, n))                      # (M, n, 3, 3); columns are axes
         axes = jnp.swapaxes(Q, -1, -2) * h[:, None, None, None]   # (M, k, d, xyz)
@@ -461,15 +488,15 @@ def make_energy_fns(cfg, rows_raw):
         Rst = (R[:, None, None, None, :, :] + delta).reshape(M, 6 * n, 3 * n)
         center = R.reshape(M, 1, 3 * n)
         pos = jnp.concatenate([center, Rst, jnp.broadcast_to(center, (M, A, 3 * n))], axis=1)
+        order = jnp.argsort(jax.random.uniform(ko, (M, A)), axis=1)  # random channel order per sample
         own = onehot[a][:, None, :]
-        disc = jnp.concatenate([own, jnp.broadcast_to(own, (M, 6 * n, own.shape[-1])),
-                                jnp.broadcast_to(onehot[None], (M, A, own.shape[-1]))], axis=1)
-        rows = jnp.concatenate([pos, disc], axis=-1).reshape(M * K, -1)
-        return rows, h
+        disc = jnp.concatenate([own, jnp.broadcast_to(own, (M, 6 * n, own.shape[-1])), onehot[order]], axis=1)
+        rows = jnp.concatenate([pos, disc], axis=-1)
+        return rows, h, order
 
-    def energy_from(L, R, a, h):
+    def energy_from(L, R, a, h, order):
+        """L (M, K) log psi of the rows -> local energy, kinetic part, Re log psi(R, a)."""
         M = R.shape[0]
-        L = L.reshape(M, K)
         l0 = L[:, 0]
         lst = L[:, 1:1 + 6 * n].reshape(M, n, 3, 2)
         ldisc = L[:, 1 + 6 * n:]
@@ -479,20 +506,35 @@ def make_energy_fns(cfg, rows_raw):
         rdisc = jnp.exp(ldisc - l0[:, None])
         V = potential_matrix(cfg, R)
         Va = V[jnp.arange(M), a, :]
-        pot = jnp.sum(Va * rdisc, axis=-1)
-        return jnp.real(kinetic + pot), jnp.real(kinetic)
+        Vo = jnp.take_along_axis(Va, order, axis=1)
+        pot = jnp.sum(Vo * rdisc, axis=-1)
+        return jnp.real(kinetic + pot), jnp.real(kinetic), jnp.real(l0)
+
+    def eval_transposed(rows):
+        rows_t = jnp.swapaxes(rows, 0, 1)            # (K, M, dim), M == CALL_BATCH
+        return jnp.swapaxes(lax.map(call, rows_t), 0, 1)
+
+    def eval_natural(rows):
+        M = rows.shape[0]
+        return rows_raw(rows.reshape(M * K, dim)).reshape(M, K)
 
     def one_chunk(args):
         R, a, key = args
-        rows, h = build_rows(R, a, key)
-        return energy_from(rows_raw(rows), R, a, h)
+        rows, h, order = build_rows(R, a, key)
+        return energy_from(eval_transposed(rows), R, a, h, order)
 
     @jax.jit
     def energy_block(Rb, ab, keys):
-        """Rb (G, M, n, 3), ab (G, M), keys (G, 2) -> local and kinetic energies (G, M)."""
+        """Rb (G, M, n, 3), ab (G, M), keys (G, 2) -> E_L, kinetic, Re log psi, each (G, M)."""
         return lax.map(one_chunk, (Rb, ab, keys))
 
-    return jax.jit(build_rows), energy_block, K
+    @jax.jit
+    def energy_natural(R, a, key):
+        """Same chunk in the natural (sample-major) call layout."""
+        rows, h, order = build_rows(R, a, key)
+        return energy_from(eval_natural(rows), R, a, h, order)
+
+    return energy_block, energy_natural, K
 
 
 # --------------------------------------------------------------------------
@@ -509,6 +551,29 @@ def _split_rhat(x):
     return float(np.sqrt(var_plus / W)) if W > 0 else float("inf")
 
 
+def _close(x, y, abs_tol, rel_tol):
+    """Elementwise |x - y| <= abs_tol + rel_tol |y|, treating equal infinities as equal."""
+    x = np.asarray(x)
+    y = np.asarray(y)
+    same = (x == y)
+    with np.errstate(invalid="ignore", over="ignore"):
+        ok = np.abs(x - y) <= abs_tol + rel_tol * np.abs(y)
+    return same | ok
+
+
+def _logpsi_dist(x, y):
+    """Max distance between two complex log psi arrays (phase modulo 2 pi); equal -inf counts as 0."""
+    x = np.asarray(x, dtype=np.complex128)
+    y = np.asarray(y, dtype=np.complex128)
+    both_zero = np.isneginf(x.real) & np.isneginf(y.real)
+    with np.errstate(invalid="ignore"):
+        d = x - y
+        dist = np.maximum(np.abs(d.real), 2.0 * np.abs(np.sin(d.imag / 2.0)))
+    dist = np.where(both_zero, 0.0, dist)
+    dist = np.where(np.isnan(dist), np.inf, dist)
+    return float(np.max(dist)) if dist.size else 0.0
+
+
 def evaluate_submission(path: Path, cfg: dict, seed: int, chain_means_out=None) -> dict:
     t0 = time.time()
     info = {"file": str(path), "gates": {}}
@@ -522,60 +587,77 @@ def evaluate_submission(path: Path, cfg: dict, seed: int, chain_means_out=None) 
     call = make_logpsi(sub, cfg)
     rows_raw, rows_eval = make_rows_eval(call, cfg["dim"])
     sample = make_sampler(call, cfg)
-    build_rows, energy_block, K = make_energy_fns(cfg, rows_raw)
+    energy_block, energy_natural, K = make_energy_fns(cfg, call, rows_raw)
 
     system_index = list(SYSTEMS).index(cfg["name"])
     base = jax.random.fold_in(jax.random.PRNGKey(seed), system_index)
-    k_samp, k_energy, k_check = jax.random.split(base, 3)
+    k_samp, k_energy, _ = jax.random.split(base, 3)
 
-    Rs, as_, stats = sample(k_samp)
+    Rs, as_, lps, stats = sample(k_samp)
     info.update(stats)
     info["seconds_sampling"] = time.time() - t0
     S, C = as_.shape
     n = cfg["n"]
     R_all = np.asarray(Rs).reshape(S * C, n, 3)
     a_all = np.asarray(as_).reshape(S * C)
-    del Rs, as_
+    lp_all = np.asarray(lps).reshape(S * C)
+    del Rs, as_, lps
     N = S * C
 
-    # local energies, ENERGY_CHUNK samples per chunk, ENERGY_GROUP chunks per call
+    # local energies: ENERGY_CHUNK samples per chunk, ENERGY_GROUP chunks per compiled call
     n_chunks = N // ENERGY_CHUNK
     keys = jax.vmap(lambda c: jax.random.fold_in(k_energy, c))(jnp.arange(n_chunks))
     e_loc = np.empty(N)
     kin = np.empty(N)
+    l0_all = np.empty(N)
     block = ENERGY_GROUP * ENERGY_CHUNK
     for g in range(N // block):
         sl = slice(g * block, (g + 1) * block)
         Rb = jnp.asarray(R_all[sl].reshape(ENERGY_GROUP, ENERGY_CHUNK, n, 3))
         ab = jnp.asarray(a_all[sl].reshape(ENERGY_GROUP, ENERGY_CHUNK))
-        e, t = energy_block(Rb, ab, keys[g * ENERGY_GROUP:(g + 1) * ENERGY_GROUP])
+        e, t, l0 = energy_block(Rb, ab, keys[g * ENERGY_GROUP:(g + 1) * ENERGY_GROUP])
         e_loc[sl] = np.asarray(e).reshape(-1)
         kin[sl] = np.asarray(t).reshape(-1)
+        l0_all[sl] = np.asarray(l0).reshape(-1)
     info["seconds_energy"] = time.time() - t0
     finite = np.isfinite(e_loc)
     if finite.any():
         info["energy_mev_unchecked"] = float(e_loc[finite].mean() * 1000.0)
 
-    # gate: layout independence and determinism of the submitted function
-    first_rows, _ = build_rows(jnp.asarray(R_all[:ENERGY_CHUNK]), jnp.asarray(a_all[:ENERGY_CHUNK]), keys[0])
-    L_ref = np.asarray(rows_eval(first_rows))
-    L_again = np.asarray(rows_eval(first_rows))
-    perm = np.asarray(jax.random.permutation(k_check, first_rows.shape[0]))
-    inv = np.argsort(perm)
-    L_perm = np.asarray(rows_eval(jnp.asarray(np.asarray(first_rows)[perm])))[inv]
-
-    def _dist(x, y):
-        d = x - y
-        return float(np.max(np.maximum(np.abs(d.real), 2.0 * np.abs(np.sin(d.imag / 2.0)))))
-
-    det = max(_dist(L_ref, L_again), _dist(L_ref, L_perm))
-    info["gates"]["layout_determinism"] = det
-    if not np.isfinite(det) or det > DET_TOL:
-        raise SubmissionError(f"log psi depends on call layout or repetition (max diff {det:.3e})", info)
-
     # gate: finiteness
     if not np.all(np.isfinite(e_loc)):
         raise SubmissionError(f"{int(np.sum(~np.isfinite(e_loc)))} non-finite local energies", info)
+
+    # gate: the function is deterministic for identical calls
+    probe = jnp.concatenate([jnp.asarray(R_all[:CALL_BATCH].reshape(CALL_BATCH, -1)),
+                             jnp.asarray(cfg["onehot"])[jnp.asarray(a_all[:CALL_BATCH])]], axis=1)
+    det = _logpsi_dist(np.asarray(rows_eval(probe)), np.asarray(rows_eval(probe)))
+    info["gates"]["repeat_determinism"] = det
+    if not det <= DET_TOL:
+        raise SubmissionError(f"log psi changes between identical calls (max diff {det:.3e})", info)
+
+    # gate: the sampler and the energy pass saw the same wavefunction
+    consist = np.abs(l0_all - lp_all)
+    consist = np.where((l0_all == lp_all), 0.0, consist)
+    consist = float(np.max(np.where(np.isnan(consist), np.inf, consist)))
+    info["gates"]["sampler_energy_consistency"] = consist
+    if not consist <= CONSIST_TOL:
+        raise SubmissionError(f"log|psi| differs between sampling and energy calls (max diff {consist:.3e})",
+                              info)
+
+    # gate: local energies do not depend on how rows are grouped into calls
+    e_nat, t_nat, l0_nat = energy_natural(jnp.asarray(R_all[:ENERGY_CHUNK]), jnp.asarray(a_all[:ENERGY_CHUNK]),
+                                          keys[0])
+    e_nat = np.asarray(e_nat)
+    ok = _close(e_nat, e_loc[:ENERGY_CHUNK], LAYOUT_ABS_TOL, LAYOUT_REL_TOL)
+    ok &= _close(np.asarray(l0_nat), l0_all[:ENERGY_CHUNK], CONSIST_TOL, 0.0)
+    with np.errstate(invalid="ignore"):
+        lay = np.abs(e_nat - e_loc[:ENERGY_CHUNK])
+    info["gates"]["layout_max_energy_diff_gev"] = float(np.max(np.where(np.isfinite(lay), lay, 0.0)))
+    info["gates"]["layout_mismatches"] = int(np.sum(~ok))
+    if not np.all(ok):
+        raise SubmissionError(f"local energies depend on the call layout ({int(np.sum(~ok))} of {ENERGY_CHUNK} "
+                              f"samples differ)", info)
 
     # gate: physical sector (Fermi statistics with isospin, parity)
     idx = np.linspace(0, N - 1, SYM_SAMPLES).astype(np.int64)
@@ -589,9 +671,11 @@ def evaluate_submission(path: Path, cfg: dict, seed: int, chain_means_out=None) 
         Rg = Rsym[:, perm_p, :] * (-1.0 if invert else 1.0)
         rows_g = np.concatenate([Rg.reshape(len(idx), -1), onehot[asym]], axis=1)
         lg = np.asarray(rows_eval(jnp.asarray(rows_g)))
-        ratio = np.exp(lg - l0)
+        with np.errstate(over="ignore", invalid="ignore"):
+            ratio = np.exp(lg - l0)
         target = np.asarray(eta)[asym]
-        violations[name] = float(np.mean(np.abs(ratio - target) ** 2))
+        v = float(np.mean(np.abs(ratio - target) ** 2))
+        violations[name] = v if np.isfinite(v) else float("inf")
     info["gates"]["symmetry"] = violations
     worst = max(violations.values())
     if not np.isfinite(worst) or worst > SYM_TOL:
@@ -612,19 +696,25 @@ def evaluate_submission(path: Path, cfg: dict, seed: int, chain_means_out=None) 
     energy_mev = energy * 1000.0
     binding_raw = energy_mev - cfg["threshold_mev"]
     info["energy_mev"] = energy_mev
+    info["binding_raw_mev"] = binding_raw
+    info["mc_error_raw_mev"] = mc_error * 1000.0
     info["kinetic_mev"] = float(kin.mean() * 1000.0)
+    info["local_energy_std_mev"] = float(e_loc.std() * 1000.0)
+    info["symmetry_violation"] = worst
     if binding_raw < cfg["floor_mev"]:
         raise SubmissionError(f"energy {binding_raw:.1f} MeV below threshold is physically implausible", info)
 
+    bound = binding_raw < 0.0
+    info["bound"] = bool(bound)
     colors = np.bincount(cfg["state_color"][a_all], minlength=len(cfg["color_names"])) / N
     scores = {
-        "binding_mev": min(binding_raw, 0.0),
+        # scored: binding below the fixed threshold (0 = no bound state) and its Monte Carlo error;
+        # a run without a bound state has failed the task and gets the worst value of both
+        "binding_mev": binding_raw if bound else 0.0,
+        "mc_error_mev": min(mc_error * 1000.0, MC_ERROR_CAP_MEV) if bound else MC_ERROR_CAP_MEV,
+        # diagnostics (not ranked)
         "energy_mev": energy_mev,
-        "mc_error_mev": mc_error * 1000.0,
-        "local_energy_std_mev": float(e_loc.std() * 1000.0),
         "parameter_count": float(sub["parameter_count"]),
-        "symmetry_violation": worst,
-        "r_hat": rhat,
         "valid": 1.0,
     }
     for key, value in zip(cfg["color_names"], colors):
@@ -634,11 +724,13 @@ def evaluate_submission(path: Path, cfg: dict, seed: int, chain_means_out=None) 
 
 
 def failed_scores(cfg: dict) -> dict:
-    return {"binding_mev": 0.0, "energy_mev": cfg["threshold_mev"], "valid": 0.0}
+    """Worst value of every scored metric."""
+    return {"binding_mev": 0.0, "mc_error_mev": MC_ERROR_CAP_MEV, "valid": 0.0}
 
 
 def baseline_scores(cfg: dict) -> dict:
-    return {"binding_mev": 0.0, "energy_mev": cfg["threshold_mev"]}
+    """Fixed no-binding baseline: the state is placed at the two-hadron threshold."""
+    return {"binding_mev": 0.0, "mc_error_mev": MC_ERROR_CAP_MEV, "energy_mev": cfg["threshold_mev"]}
 
 
 def discover_methods(artifact_root: Path) -> list[str]:
@@ -654,23 +746,67 @@ def discover_methods(artifact_root: Path) -> list[str]:
     return sorted(methods)
 
 
+def _score_one(path: Path, exp_name: str, seed: int) -> dict:
+    """Score one submission in this process; never raises."""
+    cfg = build_system(exp_name)
+    chain_means = {}
+    try:
+        out = evaluate_submission(path, cfg, seed, chain_means)
+        return {"status": "valid", "scores": out["scores"], "info": out["info"],
+                "chain_means": chain_means.get(exp_name), "backend": jax.default_backend()}
+    except Exception as exc:  # noqa: BLE001  -- any failure scores as failed
+        info = exc.args[1] if isinstance(exc, SubmissionError) and len(exc.args) > 1 else {}
+        return {"status": "failed", "reason": (str(exc.args[0]) if exc.args else repr(exc))[:2000],
+                "trace": traceback.format_exc(limit=3) if not isinstance(exc, SubmissionError) else "",
+                "info": {k: v for k, v in info.items() if k != "file"}}
+
+
+def _score_isolated(path: Path, exp_name: str, seed: int) -> dict:
+    """Score one submission in a fresh process so a crash or hang only fails that submission."""
+    with tempfile.TemporaryDirectory() as tmp:
+        result = Path(tmp) / "result.json"
+        cmd = [sys.executable, os.path.abspath(__file__), "--one", str(path), "--exp", exp_name,
+               "--seed", str(seed), "--result", str(result)]
+        try:
+            proc = subprocess.run(cmd, timeout=SUBMISSION_TIMEOUT, capture_output=True, text=True)
+        except subprocess.TimeoutExpired:
+            return {"status": "failed", "reason": f"evaluation exceeded {SUBMISSION_TIMEOUT} s", "info": {}}
+        if result.is_file():
+            try:
+                return json.loads(result.read_text())
+            except json.JSONDecodeError:
+                pass
+        return {"status": "failed", "reason": f"evaluator process exited with code {proc.returncode}",
+                "stderr_tail": (proc.stderr or "")[-3000:], "info": {}}
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("--artifacts", default="checkpoints")
     parser.add_argument("--output", default=f"scoring/scores_{SLICE}.json")
     parser.add_argument("--seed", type=int, default=SEED, help="sampler seed (audit use only)")
     parser.add_argument("--chain-means", default=None, help="optional JSON path for per-chain energy means")
+    parser.add_argument("--one", default=None, help=argparse.SUPPRESS)
+    parser.add_argument("--exp", default=None, help=argparse.SUPPRESS)
+    parser.add_argument("--result", default=None, help=argparse.SUPPRESS)
     args = parser.parse_args()
+
+    if args.one is not None:   # worker mode: one submission, one system
+        res = _score_one(Path(args.one), args.exp, args.seed)
+        Path(args.result).write_text(json.dumps(res, default=float) + "\n")
+        return
 
     artifact_root = Path(args.artifacts)
     methods = discover_methods(artifact_root)
-    print(f"[{SLICE}] backend={jax.default_backend()} methods={methods}", flush=True)
+    print(f"[{SLICE}] methods={methods}", flush=True)
 
     scored = {"slice": SLICE, "experiments": {}}
     details = {"slice": SLICE, "protocol": {
         "chains": N_CHAINS, "samples_per_chain": SAMPLES_PER_CHAIN, "thin": THIN,
         "parameter_budget": PARAM_BUDGET, "symmetry_tolerance": SYM_TOL,
-        "layout_tolerance": DET_TOL, "rhat_max": RHAT_MAX}, "submissions": {}}
+        "repeat_tolerance": DET_TOL, "layout_tolerance_gev": LAYOUT_ABS_TOL,
+        "consistency_tolerance": CONSIST_TOL, "rhat_max": RHAT_MAX,
+        "mc_error_cap_mev": MC_ERROR_CAP_MEV}, "submissions": {}}
     chain_means = {}
     for exp_name in SYSTEMS:
         cfg = build_system(exp_name)
@@ -678,18 +814,18 @@ def main() -> None:
         for method in methods:
             path = artifact_root / f"{method}_{cfg['suffix']}" / FILE_NAME
             key = f"{exp_name}/{method}"
-            try:
-                out = evaluate_submission(path, cfg, args.seed, chain_means.setdefault(method, {}))
-                results[method] = out["scores"]
-                details["submissions"][key] = {"status": "valid", **out["info"]}
-            except Exception as exc:  # noqa: BLE001  -- any failure scores as failed
-                info = exc.args[1] if isinstance(exc, SubmissionError) and len(exc.args) > 1 else {}
+            res = _score_isolated(path, exp_name, args.seed)
+            if res.get("status") == "valid":
+                results[method] = res["scores"]
+                details["submissions"][key] = {"status": "valid", "backend": res.get("backend"), **res["info"]}
+                if res.get("chain_means") is not None:
+                    chain_means.setdefault(method, {})[exp_name] = res["chain_means"]
+            else:
                 results[method] = failed_scores(cfg)
                 details["submissions"][key] = {
-                    "status": "failed", "reason": (str(exc.args[0]) if exc.args else repr(exc))[:2000],
-                    "trace": traceback.format_exc(limit=3) if not isinstance(exc, SubmissionError) else "",
-                    **{k: v for k, v in info.items() if k != "file"}}
-            jax.clear_caches()
+                    "status": "failed", "reason": res.get("reason", "unknown"), "trace": res.get("trace", ""),
+                    **({"stderr_tail": res["stderr_tail"]} if res.get("stderr_tail") else {}),
+                    **res.get("info", {})}
             row = results[method]
             print(f"[{SLICE}] {exp_name} {method}: binding={row['binding_mev']:.3f} MeV "
                   f"valid={row.get('valid', 0)} {details['submissions'][key].get('reason', '')}", flush=True)

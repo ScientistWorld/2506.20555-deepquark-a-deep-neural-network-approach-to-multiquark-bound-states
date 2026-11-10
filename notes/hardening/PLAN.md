@@ -1,0 +1,37 @@
+# Hardening iteration — working plan (delete or fold into HARDENING.md when done)
+
+## Design (implemented before job submission)
+- Submission = `checkpoints/<method>_<sys>/wavefunction.jaxexport` (jax.export of log psi,
+  float64[batch, dim] -> complex128/float64[batch]). Evaluators ignore every JSON a method writes.
+- `eval/{train,test}/evaluate.py` (separate copies; test: seed 918273645, 512 samples/chain;
+  train: seed 12345, 128 samples/chain; 4096 chains) own: AL1 Hamiltonian, sector (exchange
+  + parity gates), thresholds, Metropolis sampler, finite-difference local energy.
+- Gates -> failed: missing/corrupt, side effects/callbacks/RNG ops, param budget 10000
+  (bytes/8 of stored constants), non-finite E_L, repeat determinism, sampler-vs-energy
+  log|psi| consistency (1e-8), natural-vs-transposed layout (1e-6 GeV), symmetry (1e-6),
+  split R-hat <= 1.2, floor (Tcc -100, Tbb -400, Pcc -100 MeV).
+- Energy pass uses a transposed layout: each call holds one row of each of 4096 samples,
+  discrete-channel probes in random per-sample order -> stencils cannot be recognised.
+- Each submission runs in its own subprocess (timeout 3600 s) -> crash/hang = failed only.
+- Scored: binding_mev (coef 1.0, = min(E-thr,0)), mc_error_mev (coef 0.1, capped 5 MeV).
+  Failed OR unbound -> binding 0, mc_error 5 (worst). energy/params/colors/valid = coef 0.
+- Experiments: tcc (0.45), tbb (0.35), pcc (0.2) — revisit weights after noise numbers.
+
+## Job (scripts/hardening/driver.py, resumable via tmp/hardening/state/*.done)
+- ref track GPU0: ref_ccqqc, ref_ccqq, ref_bbqq (reproduce.sh, seed 0, authors' defaults),
+  official_scoring (scores_train/test/scores.json), seed1_ccqq.
+- better track GPU1: better_ccqqc, better_ccqq (full stage-2 schedule, 5x final batch),
+  seed1_ccqqc, better_bbqq (if time).
+- eval track GPU0: old_reference exports+eval (before numbers), NetKet crosscheck,
+  redteam states (weaker, more-training, seeds 0-2), shortcuts, evaluator-seed noise.
+- Results: notes/hardening/results/*.json (+ *_details.json), crosscheck_*.json, job_state.json.
+  Logs: tmp/hardening/logs/.
+
+## After the job
+1. Check crosscheck (gym vs NetKet local energies), timings (info.seconds), r_hat, gates.
+2. Before/after table: old JSON evaluator (REDTEAM numbers) vs new evaluator.
+3. Seed noise (ref vs seed1 vs rt seeds), evaluator noise (seeds 101/202), better vs ref.
+4. Decide weights; write HARDENING.md, update briefing/, scoring/*.md, DETAILS? CONSTRAINTS.
+5. Restore scripts/run.sh to reproduce the reference end to end (scripts/reproduce.sh).
+6. download.sh: no external data (code vendored); keep idempotent mkdir.
+7. python validate.py; commit; action done.

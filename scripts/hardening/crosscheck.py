@@ -45,16 +45,16 @@ sub = gym.load_submission(Path(os.environ["CC_SUB"]), cfg)
 call = gym.make_logpsi(sub, cfg)
 rows_raw, rows_eval = gym.make_rows_eval(call, cfg["dim"])
 sample = gym.make_sampler(call, cfg)
-build_rows, energy_block, K = gym.make_energy_fns(cfg, rows_raw)
-Rs, as_, stats = sample(jax.random.PRNGKey(4242))
+energy_block, energy_natural, K = gym.make_energy_fns(cfg, call, rows_raw)
+Rs, as_, lps, stats = sample(jax.random.PRNGKey(4242))
 n = cfg["n"]
 R = np.asarray(Rs).reshape(-1, n, 3)
 a = np.asarray(as_).reshape(-1)
 N = R.shape[0]
 G = N // gym.ENERGY_CHUNK
 keys = jax.vmap(lambda c: jax.random.fold_in(jax.random.PRNGKey(99), c))(jnp.arange(G))
-e_gym, t_gym = energy_block(jnp.asarray(R.reshape(G, gym.ENERGY_CHUNK, n, 3)),
-                            jnp.asarray(a.reshape(G, gym.ENERGY_CHUNK)), keys)
+e_gym, t_gym, _ = energy_block(jnp.asarray(R.reshape(G, gym.ENERGY_CHUNK, n, 3)),
+                               jnp.asarray(a.reshape(G, gym.ENERGY_CHUNK)), keys)
 e_gym = np.asarray(e_gym).reshape(-1)
 t_gym = np.asarray(t_gym).reshape(-1)
 

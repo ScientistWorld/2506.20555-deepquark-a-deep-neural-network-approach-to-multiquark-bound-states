@@ -2,8 +2,9 @@
 """Build shortcut / baseline submissions for the hardening audit.
 
 Environment:
-  SC_KIND   one of: legacy_fabricated, legacy_impossible, corrupt, empty,
-            metadata_claims, abs_sign, noisy, bloated, bosonic, gaussian
+  SC_KIND   one of: legacy_threshold_replay, legacy_fabricated, legacy_impossible,
+            corrupt, empty, metadata_claims, abs_sign, noisy, bloated, bosonic,
+            gaussian, stencil
   SC_SYSTEM ccqq | bbqq | ccqqc
   SC_BASE   path to a reference wavefunction.jaxexport (wrapper kinds)
   SC_OUT    submission directory to create
@@ -62,7 +63,10 @@ def export(fn, batch):
     WF.write_bytes(exp.serialize())
 
 
-if KIND == "legacy_fabricated":
+if KIND == "legacy_threshold_replay":
+    # REDTEAM "visible-answer replay": threshold energies, zero error, zero parameters
+    legacy(THRESH_GEV, 0.0, 0)
+elif KIND == "legacy_fabricated":
     legacy(THRESH_GEV - 1.0, 0.0, 1857)
 elif KIND == "legacy_impossible":
     legacy(-1e6, -1e6, -1e9)
@@ -96,6 +100,24 @@ elif KIND == "bloated":
         return base.call(x) + 0.0 * jnp.sum(table)
 
     export(bloated, batch)
+elif KIND == "stencil":
+    # batch-aware exploit: rows that have a near neighbour in the same call but no
+    # coordinate twin are finite-difference stencil points of a natural-layout
+    # evaluator; raising log psi there fakes a large negative kinetic energy.
+    base, batch = load_base()
+    n = N_PART
+
+    def stencil(x):
+        R = x[:, :3 * n]
+        sq = jnp.sum(R * R, axis=1)
+        d2 = sq[:, None] + sq[None, :] - 2.0 * (R @ R.T)
+        eye = jnp.eye(x.shape[0], dtype=bool)
+        twin = jnp.any((d2 < 1e-10) & ~eye, axis=1)
+        near = jnp.any((d2 < 1.6e-5) & (d2 >= 1e-10) & ~eye, axis=1)
+        # +2e-10 per stencil point is worth roughly -5 MeV of kinetic energy
+        return base.call(x) + jnp.where(near & ~twin, 2e-10, 0.0)
+
+    export(stencil, 4096)
 elif KIND == "gaussian":
     # honest, untrained single-channel Gaussian in the correct sector
     n = N_PART
