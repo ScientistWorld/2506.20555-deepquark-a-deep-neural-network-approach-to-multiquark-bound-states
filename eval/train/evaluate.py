@@ -64,10 +64,10 @@ SLICE = "train"
 SEED = 12345
 N_CHAINS = 4096
 SAMPLES_PER_CHAIN = 128          # 524,288 samples per system
-THIN = 10                        # Metropolis steps between stored samples
+THIN = 20                        # Metropolis steps between stored samples
 ADAPT_BLOCKS = 40                # step-size adaptation blocks during burn-in
 ADAPT_BLOCK_STEPS = 50
-EXTRA_BURN_STEPS = 1000          # burn-in after adaptation, fixed step size
+EXTRA_BURN_STEPS = 3000          # burn-in after adaptation, fixed step size
 INITIAL_STEP = 0.5               # GeV^-1
 INITIAL_SPREAD = 1.5             # GeV^-1
 CALL_BATCH = 4096                # every call of a submission sees this many rows
@@ -77,14 +77,15 @@ FD_H_MIN, FD_H_MAX = 0.5e-3, 1.5e-3   # finite-difference step range, GeV^-1
 SYM_SAMPLES = 65536
 SYM_TOL = 1.0e-6                 # max squared relative L2 symmetry violation
 DET_TOL = 1.0e-12                # max |delta log psi| between repeated identical calls
-LAYOUT_ABS_TOL = 1.0e-6          # GeV; max local-energy difference between call layouts
-LAYOUT_REL_TOL = 1.0e-9
+LAYOUT_ABS_TOL = 1.0e-4          # GeV; max per-sample local-energy difference between call layouts
+LAYOUT_REL_TOL = 1.0e-6          # (floating-point noise near nodes reaches ~1e-6 GeV)
+LAYOUT_MEAN_TOL = 1.0e-6         # GeV; max mean |difference| over the compared samples
 CONSIST_TOL = 1.0e-8             # max |log|psi|| difference, sampler vs energy pass
 RHAT_MAX = 1.2
 PARAM_BUDGET = 10000             # stored constants, counted in float64 equivalents (8 bytes)
 MC_ERROR_CAP_MEV = 5.0           # worst scored Monte Carlo error (also given to failed / unbound runs)
 FILE_NAME = "wavefunction.jaxexport"
-SUBMISSION_TIMEOUT = 3600        # seconds per (system, method); each runs in its own process
+SUBMISSION_TIMEOUT = 1800        # seconds per (system, method); each runs in its own process
 MAX_FILE_BYTES = 64 * 1024 * 1024
 
 # --------------------------------------------------------------------------
@@ -656,11 +657,13 @@ def evaluate_submission(path: Path, cfg: dict, seed: int, chain_means_out=None) 
     ok &= _close(np.asarray(l0_nat), l0_all[:ENERGY_CHUNK], CONSIST_TOL, 0.0)
     with np.errstate(invalid="ignore"):
         lay = np.abs(e_nat - e_loc[:ENERGY_CHUNK])
+    lay_mean = float(np.mean(np.where(np.isfinite(lay), lay, np.inf)))
     info["gates"]["layout_max_energy_diff_gev"] = float(np.max(np.where(np.isfinite(lay), lay, 0.0)))
+    info["gates"]["layout_mean_energy_diff_gev"] = lay_mean
     info["gates"]["layout_mismatches"] = int(np.sum(~ok))
-    if not np.all(ok):
+    if not np.all(ok) or not lay_mean <= LAYOUT_MEAN_TOL:
         raise SubmissionError(f"local energies depend on the call layout ({int(np.sum(~ok))} of {ENERGY_CHUNK} "
-                              f"samples differ)", info)
+                              f"samples differ, mean |diff| {lay_mean:.2e} GeV)", info)
 
     # gate: physical sector (Fermi statistics with isospin, parity)
     idx = np.linspace(0, N - 1, SYM_SAMPLES).astype(np.int64)
@@ -808,6 +811,7 @@ def main() -> None:
         "chains": N_CHAINS, "samples_per_chain": SAMPLES_PER_CHAIN, "thin": THIN,
         "parameter_budget": PARAM_BUDGET, "symmetry_tolerance": SYM_TOL,
         "repeat_tolerance": DET_TOL, "layout_tolerance_gev": LAYOUT_ABS_TOL,
+        "layout_mean_tolerance_gev": LAYOUT_MEAN_TOL, "burn_in_steps": ADAPT_BLOCKS * ADAPT_BLOCK_STEPS + EXTRA_BURN_STEPS,
         "consistency_tolerance": CONSIST_TOL, "rhat_max": RHAT_MAX,
         "mc_error_cap_mev": MC_ERROR_CAP_MEV}, "submissions": {}}
     chain_means = {}

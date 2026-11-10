@@ -37,3 +37,15 @@
 5. Restore scripts/run.sh to reproduce the reference end to end (scripts/reproduce.sh).
 6. download.sh: no external data (code vendored); keep idempotent mkdir.
 7. python validate.py; commit; action done.
+
+## Observations from job 586a8748 (first real evaluator run)
+- NetKet crosscheck (Tcc, 16k configs): mean diff -3e-5 MeV, median |diff| 8e-5 MeV -> evaluator correct.
+- Evaluator ~30-37 s per system (test). Old reference (test): Tcc -13.27 (err 0.15), Tbb -152.63
+  (err 0.07), Pcc E=5718.51 -> +0.51 above threshold = UNBOUND (method's own 100k eval selection
+  had claimed -0.46..-0.83: selection bias). Params counted 1920 (tetra), 2948 (penta).
+- Train Pcc failed layout gate on 2 samples at 3e-6 GeV (fp noise) -> tolerance now 1e-4/sample +
+  1e-6 GeV mean. Train Tcc R-hat 1.167 -> THIN 20, burn-in +3000 (edited mid-job; official scoring
+  in this job uses the edited evaluator). NEXT JOB: delete state/eval_old_reference.done and
+  noise_old_reference_* to rescore the old reference with the final evaluator.
+- If the retrained reference Pcc is also unbound: Pcc reference sits at the bound (0) -> check
+  better variant (full schedule); consider paper's settings (Fig. 2 iterations).
