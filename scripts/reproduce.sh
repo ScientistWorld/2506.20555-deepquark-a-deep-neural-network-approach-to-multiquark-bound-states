@@ -2,11 +2,20 @@
 # Reproduce the reference DeepQuark submissions for all scored systems from
 # scratch, then score them.  The schedule is the authors' released one
 # (train.py: 1000 + up to N x 500 + 10 x 50 SR iterations, 2000 chains, 20000
-# samples); the shipped reference states were produced with these settings,
-# which use smaller Monte Carlo checks than the code defaults for the stage-2
-# early-stop test (2 x 1e5 instead of 5 x 4e5 samples), at most 6 stage-2 blocks
-# instead of 10 (every run stopped after 2-3), and 1e5 instead of 4e5 samples for
-# the method's own checkpoint selection.  DQ_SEED fixes the run.
+# samples); the reference states were produced with these settings, which use
+# smaller Monte Carlo checks than the code defaults for the stage-2 early-stop
+# test (2 x 1e5 instead of 5 x 4e5 samples), at most 6 stage-2 blocks instead of
+# 10 (every run stopped after 1-5), and 1e5 instead of 4e5 samples for the
+# method's own checkpoint selection.  DQ_SEED fixes the run (the shipped Tcc and
+# Tbb states are DQ_SEED=0 runs of exactly this script).
+#
+# The pentaquark adds a refinement of the final stage: 10 more blocks of 50 SR
+# iterations at lr 1e-4 (10x below the final-stage lr), continuing from the last
+# final-stage checkpoint, and the method's own evaluation then selects among all
+# 20 final-stage checkpoints.  At lr 1e-3 alone its final stage hovers at the
+# threshold (energy -0.4..+1.3 MeV around it); the annealed blocks bind it.  The
+# shipped Pcc state is an earlier unseeded run refined this way (branch from
+# final-stage checkpoint 8, checkpoint 27 selected).
 set -euo pipefail
 
 cd /home/user
@@ -18,6 +27,7 @@ run_target() {
   local quarks="$1"
   local spin="$2"
   local artifact_name="$3"
+  local refine_blocks="${4:-0}"
 
   (
     export DQ_POTENTIAL=AL1
@@ -43,6 +53,8 @@ run_target() {
     export DQ_VARIANCE_TARGET="${DQ_VARIANCE_TARGET:-0.002}"
     export DQ_TRAIN3_BLOCKS="${DQ_TRAIN3_BLOCKS:-10}"
     export DQ_TRAIN3_ITERS="${DQ_TRAIN3_ITERS:-50}"
+    export DQ_REFINE_BLOCKS="$refine_blocks"
+    export DQ_REFINE_LR="${DQ_REFINE_LR:-0.0001}"
     export DQ_EVAL_NCHAINS="${DQ_EVAL_NCHAINS:-2000}"
     export DQ_EVAL_NSWEEP="${DQ_EVAL_NSWEEP:-100}"
     export DQ_EVAL_NSAMPLE="${DQ_EVAL_NSAMPLE:-100000}"
@@ -60,7 +72,7 @@ for system in ${DQ_SYSTEMS:-ccqq bbqq ccqqc}; do
   case "$system" in
     ccqq) run_target ccqq 1 deepquark_ccqq ;;
     bbqq) run_target bbqq 1 deepquark_bbqq ;;
-    ccqqc) run_target ccqqc 2.5 deepquark_ccqqc ;;
+    ccqqc) run_target ccqqc 2.5 deepquark_ccqqc "${DQ_PCC_REFINE_BLOCKS:-10}" ;;
     *) echo "unknown system $system" >&2; exit 1 ;;
   esac
 done

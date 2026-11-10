@@ -77,7 +77,8 @@ if skip_rms:
     evaluation['skip_rms'] = True
 sa = nk.sampler.MetropolisSampler(hi, GaussianFlipRule(hi_dis=hi_dis, sigma=sigma), n_chains=nchains,
                                   sweep_size=nsweep)
-eval_vs = make_mcstate(sa, model, n_samples=nsample, n_discard_per_chain=ndiscard, chunk_size=max(1, nsample // 4))
+eval_vs = make_mcstate(sa, model, n_samples=nsample, n_discard_per_chain=ndiscard,
+                       chunk_size=env_int("DQ_EVAL_CHUNK", max(1, nsample // 4)))
 
 logpath = out_path('eval', n)
 with open(f'{logpath}/eval.json', 'w', encoding='utf-8') as f:

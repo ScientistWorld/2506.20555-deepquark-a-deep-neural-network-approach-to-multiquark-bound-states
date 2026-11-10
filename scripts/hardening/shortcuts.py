@@ -4,7 +4,7 @@
 Environment:
   SC_KIND   one of: legacy_threshold_replay, legacy_fabricated, legacy_impossible,
             corrupt, empty, metadata_claims, abs_sign, noisy, bloated, bosonic,
-            gaussian, stencil
+            gaussian, stencil, kink
   SC_SYSTEM ccqq | bbqq | ccqqc
   SC_BASE   path to a reference wavefunction.jaxexport (wrapper kinds)
   SC_OUT    submission directory to create
@@ -118,6 +118,21 @@ elif KIND == "stencil":
         return base.call(x) + jnp.where(near & ~twin, 2e-10, 0.0)
 
     export(stencil, 4096)
+elif KIND == "kink":
+    # cusp ridges: log psi -> log psi - 0.05 GeV * sum_{i<j} |z_i - z_j| (translation, parity
+    # and exchange invariant).  An evaluator that took the Laplacian analytically (almost
+    # everywhere) would miss the positive kinetic-energy delta on every z_i = z_j plane and
+    # report tens of MeV of spurious kinetic energy; the random-step finite-difference
+    # stencil integrates those deltas, so the state just scores worse.
+    base, batch = load_base()
+    n = N_PART
+
+    def kink(x):
+        z = x[:, 2:3 * n:3]
+        dz = jnp.abs(z[:, :, None] - z[:, None, :])
+        return base.call(x) - 0.05 * 0.5 * jnp.sum(dz, axis=(1, 2))
+
+    export(kink, batch)
 elif KIND == "gaussian":
     # honest, untrained single-channel Gaussian in the correct sector
     n = N_PART

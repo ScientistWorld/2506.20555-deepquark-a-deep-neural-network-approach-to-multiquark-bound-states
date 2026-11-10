@@ -42,10 +42,25 @@ if [ -z "$RUN_ID" ] || [ ! -d "$RUN_PARENT/$RUN_ID" ]; then
   exit 1
 fi
 
+# Optional refinement of the final stage at an annealed learning rate (used for the
+# pentaquark, whose final stage at lr 1e-3 hovers at the threshold): DQ_REFINE_BLOCKS more
+# blocks of DQ_TRAIN3_ITERS SR iterations at DQ_REFINE_LR, continuing from the last final-stage
+# checkpoint (DQ_REFINE_FROM overrides) and saved as further Train3_* checkpoints.
+TRAIN3_BLOCKS="${DQ_TRAIN3_BLOCKS:-10}"
+REFINE_BLOCKS="${DQ_REFINE_BLOCKS:-0}"
+if [ "$REFINE_BLOCKS" != "0" ] && [ "${DQ_SKIP_TRAIN:-0}" != "1" ]; then
+  DQ_RESUME_FROM="${DQ_REFINE_FROM:-$((TRAIN3_BLOCKS - 1))}" \
+  DQ_RESUME_START_INDEX="$TRAIN3_BLOCKS" \
+  DQ_RESUME_TRAIN3_BLOCKS="$REFINE_BLOCKS" \
+  DQ_RESUME_TRAIN3_ITERS="${DQ_TRAIN3_ITERS:-50}" \
+  DQ_RESUME_LR="${DQ_REFINE_LR:-0.0001}" \
+    python multiquark/continue_train3.py "$POTENTIAL" "$QUARKS" "$SPIN" "$ISOSPIN" --n "$RUN_ID"
+fi
+
 if [ -n "${DQ_EVAL_IRANGE:-}" ]; then
   IRANGE="$DQ_EVAL_IRANGE"
 else
-  IRANGE_END="${DQ_TRAIN3_BLOCKS:-10}"
+  IRANGE_END=$((TRAIN3_BLOCKS + REFINE_BLOCKS))
   IRANGE="$(python -c "print(list(range($IRANGE_END)))")"
 fi
 if [ "${DQ_SKIP_EVAL:-0}" != "1" ]; then

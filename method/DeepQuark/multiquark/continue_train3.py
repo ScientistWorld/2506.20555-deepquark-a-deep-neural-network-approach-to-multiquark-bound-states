@@ -98,6 +98,14 @@ def main():
     with open(f"{logpath}/Train3_{start}.mpack", "rb") as handle:
         vs.variables = flax.serialization.from_bytes(vs.variables, handle.read())
 
+    # Optional warm-up at a 10x smaller learning rate (not saved): the resumed sampler starts
+    # from fresh chains, and a first full-size step on unequilibrated samples can destabilize SR.
+    warmup = env_int("DQ_RESUME_WARMUP_ITERS", 0)
+    if warmup > 0:
+        print(f"continue_train3 warm-up: {warmup} iterations at lr {lr * 0.1}", flush=True)
+        nk.VMC(ha, nk.optimizer.Sgd(lr * 0.1), variational_state=vs,
+               preconditioner=nk.optimizer.SR()).run(n_iter=warmup)
+
     gs = nk.VMC(ha, nk.optimizer.Sgd(lr), variational_state=vs, preconditioner=nk.optimizer.SR())
     for i in range(first_new, first_new + blocks):
         if os.path.exists(f"{logpath}/Train3_{i}.mpack") and os.environ.get("DQ_RESUME_OVERWRITE", "0") != "1":
@@ -122,6 +130,8 @@ def main():
         "nsample": nsample,
         "ndiscard": ndiscard,
         "lr": lr,
+        "warmup_iters": warmup,
+        "seed": os.environ.get("DQ_SEED"),
         "sigma": sigma * 0.197,
     }
     with open(train_path, "w", encoding="utf-8") as handle:

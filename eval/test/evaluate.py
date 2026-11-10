@@ -60,7 +60,7 @@ from jax import export as jexport  # noqa: E402
 SLICE = "test"
 SEED = 918273645
 N_CHAINS = 4096
-SAMPLES_PER_CHAIN = 512          # 2,097,152 samples per system
+SAMPLES_PER_CHAIN = 2048         # 8,388,608 samples per system
 THIN = 20                        # Metropolis steps between stored samples
 ADAPT_BLOCKS = 40                # step-size adaptation blocks during burn-in
 ADAPT_BLOCK_STEPS = 50
