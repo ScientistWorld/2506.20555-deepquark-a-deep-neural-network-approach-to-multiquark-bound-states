@@ -5,4 +5,4 @@ action: submit
 gpus: 1
 test: false
 milestone: core_claim_plus
-notes: "Hardening job, sequential (previous 3-process job was CPU-starved and lacked flatbuffers): validate new VMC evaluator on old reference + NetKet crosscheck; retrain DeepQuark reference (authors' defaults, seed 0) for Pcc/Tcc/Tbb, export, official train/test scoring; evaluate red-team variants; then seed-1 repeats, full-schedule better variant, shortcuts, evaluator noise as time allows (resumable)."
+notes: "Hardening scoring job (no training; previous node trained 10x slower): install previously trained DeepQuark states (re-exported with final code) as reference, official train/test scoring with the final VMC evaluator; red-team weaker/better/seed variants and continued-Pcc variant; NetKet crosscheck; 12 shortcuts; evaluator-seed noise. ~1.5 h."

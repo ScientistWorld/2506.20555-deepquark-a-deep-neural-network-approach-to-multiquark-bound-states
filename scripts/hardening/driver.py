@@ -37,15 +37,15 @@ SPIN = {"ccqq": "1", "bbqq": "1", "ccqqc": "2.5"}
 PARENT = {"ccqq": "AL1/ccqq(S=1.0_I=0.0)", "bbqq": "AL1/bbqq(S=1.0_I=0.0)", "ccqqc": "AL1/ccqqc(S=2.5_I=0.0)"}
 TEN = "[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]"
 
-REF_ENV = {
+REF_ENV = {   # = scripts/reproduce.sh defaults
     "DQ_SEED": "0", "DQ_NCHAINS": "2000", "DQ_NSWEEP": "20", "DQ_NSAMPLE": "20000", "DQ_NDISCARD": "100",
-    "DQ_TRAIN1_ITERS": "1000", "DQ_TRAIN2_BLOCKS": "10", "DQ_TRAIN2_ITERS": "500", "DQ_TRAIN2_NDISCARD": "200",
-    "DQ_CHECK_NCHAINS": "2000", "DQ_CHECK_NSWEEP": "50", "DQ_CHECK_NSAMPLE": "400000",
-    "DQ_CHECK_NDISCARD": "500", "DQ_CHECK_REPEATS": "5", "DQ_VARIANCE_TARGET": "0.002",
+    "DQ_TRAIN1_ITERS": "1000", "DQ_TRAIN2_BLOCKS": "6", "DQ_TRAIN2_ITERS": "500", "DQ_TRAIN2_NDISCARD": "200",
+    "DQ_CHECK_NCHAINS": "2000", "DQ_CHECK_NSWEEP": "50", "DQ_CHECK_NSAMPLE": "100000",
+    "DQ_CHECK_NDISCARD": "500", "DQ_CHECK_REPEATS": "2", "DQ_VARIANCE_TARGET": "0.002",
     "DQ_TRAIN3_BLOCKS": "10", "DQ_TRAIN3_ITERS": "50", "DQ_EVAL_NCHAINS": "2000", "DQ_EVAL_NSWEEP": "100",
-    "DQ_EVAL_NSAMPLE": "400000", "DQ_EVAL_NDISCARD": "1000", "DQ_EVAL_REPEATS": "2", "DQ_EVAL_SKIP_RMS": "1",
+    "DQ_EVAL_NSAMPLE": "100000", "DQ_EVAL_NDISCARD": "1000", "DQ_EVAL_REPEATS": "2", "DQ_EVAL_SKIP_RMS": "1",
 }
-BETTER_ENV = dict(REF_ENV, DQ_VARIANCE_TARGET="0", DQ_CHECK_REPEATS="1", DQ_CHECK_NSAMPLE="100000",
+BETTER_ENV = dict(REF_ENV, DQ_TRAIN2_BLOCKS="10", DQ_VARIANCE_TARGET="0", DQ_CHECK_REPEATS="1",
                   DQ_TRAIN3_NSAMPLE="100000")
 
 for d in (ART, WORK, STATE, LOGS, CHAINS, RES):
@@ -277,6 +277,24 @@ def official_scoring(dev):
         env=env, logname="official")
 
 
+def install_reference():
+    """Ship the previously trained reference states (re-exported with the final export code)."""
+    runs = {"ccqq": METHOD / PARENT["ccqq"] / "2", "bbqq": METHOD / PARENT["bbqq"] / "1",
+            "ccqqc": WORK / "old_pcc" / "DeepQuark" / PARENT["ccqqc"] / "1"}
+    for system, run_dir in runs.items():
+        src = ART / "old_reference" / f"deepquark_{system}"
+        dst = ROOT / "checkpoints" / f"deepquark_{system}"
+        if dst.exists():
+            shutil.rmtree(dst)
+        dst.mkdir(parents=True)
+        for f in ("wavefunction.jaxexport", "export_meta.json"):
+            shutil.copy2(src / f, dst / f)
+        for f in ("parameters.json", "train.json", "eval.json", "results.json"):   # provenance only
+            if (run_dir / f).exists():
+                shutil.copy2(run_dir / f, dst / f)
+        log(f"installed reference {system} from {run_dir}")
+
+
 def plan(dev):
     """(name, function, estimated minutes, required stages) in priority order."""
     P = []
@@ -284,45 +302,37 @@ def plan(dev):
     def add(name, fn, minutes, requires=()):
         P.append((name, fn, minutes, tuple(requires)))
 
-    # 1. evaluator validation on the previously shipped reference (also the 'before' numbers)
+    # 1. reference = previously trained DeepQuark states, exported with the final code
     add("exports_old", lambda: exports_old(dev), 20)
-    add("eval_old_reference", lambda: evaluate("old_reference", dev), 25, ["exports_old"])
     add("crosscheck_ccqq", lambda: crosscheck("ccqq", "2", TEN, "old_reference", dev), 8, ["exports_old"])
-    # 2. the reference every future attempt is ranked against
-    for system, minutes in (("ccqqc", 55), ("ccqq", 55), ("bbqq", 45)):
-        add(f"ref_{system}", lambda s=system: ref_system(s, dev), minutes)
-    add("official_scoring", lambda: official_scoring(dev), 30, ["ref_ccqqc", "ref_ccqq", "ref_bbqq"])
-    # 3. weaker / longer-trained / seed variants trained by the red-team audit
+    add("install_reference", install_reference, 1, ["exports_old"])
+    add("official_scoring", lambda: official_scoring(dev), 15, ["install_reference"])
+    # 2. weaker / longer-trained / seed variants (red-team audit states and the continued Pcc run)
     add("exports_redteam", lambda: exports_redteam(dev), 12)
     add("crosscheck_ccqqc", lambda: crosscheck("ccqqc", "1", "[25, 27, 43]", "old_pcc_continued", dev), 8,
         ["exports_redteam"])
-    for variant in ("rt_weaker_less_training", "rt_better_more_training", "old_pcc_continued",
-                    "rt_reference_seed_0", "rt_reference_seed_1", "rt_reference_seed_2"):
-        add(f"eval_{variant}", lambda v=variant: evaluate(v, dev, slices=("test",)), 8, ["exports_redteam"])
-    # 4. training-seed repeats and the better variant (full stage-2 schedule, 5x final batch)
-    add("seed1_ccqqc", lambda: train_variant("ref_seed1", "ccqqc", dict(REF_ENV, DQ_SEED="1"), dev), 55)
-    add("better_ccqqc", lambda: train_variant("better_full_schedule", "ccqqc", BETTER_ENV, dev), 130)
-    add("seed1_ccqq", lambda: train_variant("ref_seed1", "ccqq", dict(REF_ENV, DQ_SEED="1"), dev), 55)
-    add("better_ccqq", lambda: train_variant("better_full_schedule", "ccqq", BETTER_ENV, dev), 120)
-    add("eval_better_full_schedule", lambda: evaluate("better_full_schedule", dev), 25,
-        ["better_ccqqc", "better_ccqq"])
-    add("eval_ref_seed1", lambda: evaluate("ref_seed1", dev, slices=("test",)), 15, ["seed1_ccqqc", "seed1_ccqq"])
-    # 5. shortcuts against the new evaluator
+    for variant in ("rt_better_more_training", "old_pcc_continued", "rt_weaker_less_training"):
+        add(f"eval_{variant}", lambda v=variant: evaluate(v, dev), 8, ["exports_redteam"])
+    for variant in ("rt_reference_seed_0", "rt_reference_seed_1", "rt_reference_seed_2"):
+        add(f"eval_{variant}", lambda v=variant: evaluate(v, dev, slices=("test",)), 5, ["exports_redteam"])
+    # 3. shortcuts against the new evaluator
     for kind in SHORTCUTS:
-        add(f"shortcut_{kind}", lambda k=kind: shortcut_stage(k, dev), 6, ["exports_old"])
-    # 6. evaluator-seed noise (paired re-measurements of the same submissions)
-    for seed in (101, 202):
+        add(f"shortcut_{kind}", lambda k=kind: shortcut_stage(k, dev), 5, ["exports_old"])
+    # 4. evaluator-seed noise (paired re-measurements of the same submissions)
+    for seed in (101, 202, 303):
         add(f"noise_reference_{seed}", lambda s=seed: evaluate(
             "reference", dev, slices=("test",), seed=s, root=ROOT / "checkpoints", tag=f"reference_seed{s}"),
-            12, ["official_scoring"])
-        add(f"noise_better_{seed}", lambda s=seed: evaluate(
-            "better_full_schedule", dev, slices=("test",), seed=s, tag=f"better_full_schedule_seed{s}"),
-            10, ["eval_better_full_schedule"])
-        add(f"noise_old_reference_{seed}", lambda s=seed: evaluate(
-            "old_reference", dev, slices=("test",), seed=s, tag=f"old_reference_seed{s}"), 12, ["exports_old"])
-    # 7. optional
-    add("better_bbqq", lambda: train_variant("better_full_schedule", "bbqq", BETTER_ENV, dev), 110)
-    add("eval_better_full_schedule_bbqq", lambda: evaluate("better_full_schedule", dev), 25, ["better_bbqq"])
+            5, ["official_scoring"])
+    for variant in ("rt_better_more_training", "old_pcc_continued"):
+        for seed in (101, 202):
+            add(f"noise_{variant}_{seed}", lambda v=variant, s=seed: evaluate(
+                v, dev, slices=("test",), seed=s, tag=f"{v}_seed{s}"), 4, ["exports_redteam"])
+    # 5. optional retraining (HW_TRAIN=1): authors' defaults, seed repeats, full-schedule variant
+    if os.environ.get("HW_TRAIN") == "1":
+        for system, minutes in (("ccqqc", 55), ("ccqq", 55), ("bbqq", 45)):
+            add(f"ref_{system}", lambda s=system: ref_system(s, dev), minutes)
+        add("better_ccqqc", lambda: train_variant("better_full_schedule", "ccqqc", BETTER_ENV, dev), 130)
+        add("eval_better_full_schedule", lambda: evaluate("better_full_schedule", dev), 10, ["better_ccqqc"])
     return P
 
 

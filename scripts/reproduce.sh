@@ -1,7 +1,12 @@
 #!/bin/bash
 # Reproduce the reference DeepQuark submissions for all scored systems from
-# scratch, then score them.  Settings are the authors' released defaults
-# (train.py / eval.py), with a fixed seed so the run is repeatable.
+# scratch, then score them.  The schedule is the authors' released one
+# (train.py: 1000 + up to N x 500 + 10 x 50 SR iterations, 2000 chains, 20000
+# samples); the shipped reference states were produced with these settings,
+# which use smaller Monte Carlo checks than the code defaults for the stage-2
+# early-stop test (2 x 1e5 instead of 5 x 4e5 samples), at most 6 stage-2 blocks
+# instead of 10 (every run stopped after 2-3), and 1e5 instead of 4e5 samples for
+# the method's own checkpoint selection.  DQ_SEED fixes the run.
 set -euo pipefail
 
 cd /home/user
@@ -27,20 +32,20 @@ run_target() {
     export DQ_NSAMPLE="${DQ_NSAMPLE:-20000}"
     export DQ_NDISCARD="${DQ_NDISCARD:-100}"
     export DQ_TRAIN1_ITERS="${DQ_TRAIN1_ITERS:-1000}"
-    export DQ_TRAIN2_BLOCKS="${DQ_TRAIN2_BLOCKS:-10}"
+    export DQ_TRAIN2_BLOCKS="${DQ_TRAIN2_BLOCKS:-6}"
     export DQ_TRAIN2_ITERS="${DQ_TRAIN2_ITERS:-500}"
     export DQ_TRAIN2_NDISCARD="${DQ_TRAIN2_NDISCARD:-200}"
     export DQ_CHECK_NCHAINS="${DQ_CHECK_NCHAINS:-2000}"
     export DQ_CHECK_NSWEEP="${DQ_CHECK_NSWEEP:-50}"
-    export DQ_CHECK_NSAMPLE="${DQ_CHECK_NSAMPLE:-400000}"
+    export DQ_CHECK_NSAMPLE="${DQ_CHECK_NSAMPLE:-100000}"
     export DQ_CHECK_NDISCARD="${DQ_CHECK_NDISCARD:-500}"
-    export DQ_CHECK_REPEATS="${DQ_CHECK_REPEATS:-5}"
+    export DQ_CHECK_REPEATS="${DQ_CHECK_REPEATS:-2}"
     export DQ_VARIANCE_TARGET="${DQ_VARIANCE_TARGET:-0.002}"
     export DQ_TRAIN3_BLOCKS="${DQ_TRAIN3_BLOCKS:-10}"
     export DQ_TRAIN3_ITERS="${DQ_TRAIN3_ITERS:-50}"
     export DQ_EVAL_NCHAINS="${DQ_EVAL_NCHAINS:-2000}"
     export DQ_EVAL_NSWEEP="${DQ_EVAL_NSWEEP:-100}"
-    export DQ_EVAL_NSAMPLE="${DQ_EVAL_NSAMPLE:-400000}"
+    export DQ_EVAL_NSAMPLE="${DQ_EVAL_NSAMPLE:-100000}"
     export DQ_EVAL_NDISCARD="${DQ_EVAL_NDISCARD:-1000}"
     export DQ_EVAL_REPEATS="${DQ_EVAL_REPEATS:-2}"
     # rms radii are diagnostics that the gym does not score

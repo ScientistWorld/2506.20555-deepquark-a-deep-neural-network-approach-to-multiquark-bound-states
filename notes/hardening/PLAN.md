@@ -49,3 +49,14 @@
   noise_old_reference_* to rescore the old reference with the final evaluator.
 - If the retrained reference Pcc is also unbound: Pcc reference sits at the bound (0) -> check
   better variant (full schedule); consider paper's settings (Fig. 2 iterations).
+
+## Job 586a8748 cancelled (slow node) -> Plan C
+- On host node NetKet training ran 2.3-3.6 s/iter even as a single process (earlier
+  jobs on pli nodes: 0.25 s/iter); the evaluator was fine (35 s/system). Retraining 3 systems
+  would not fit. Plan C: ship the previously trained states (same DeepQuark algorithm and
+  schedule; training code changed only by optional seeding hooks) re-exported with the final
+  export code; scripts/reproduce.sh now uses exactly the settings that produced them
+  (stage-2 checks 2x1e5, <=6 blocks, 1e5-sample selection) + DQ_SEED.
+- Variants without new training: better = rt_better_more_training (Tcc/Tbb, +1000 SR iters at
+  lr 1e-4) and old_pcc_continued (Pcc, +40 Train3 blocks at decaying lr); weaker =
+  rt_weaker_less_training; seeds = rt_reference_seed_0/1/2. Retraining only with HW_TRAIN=1.
