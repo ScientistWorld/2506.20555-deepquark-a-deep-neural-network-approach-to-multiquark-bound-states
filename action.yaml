@@ -1,8 +1,6 @@
 # Once you set action to 'submit' or 'done', STOP immediately.
 # Do NOT sleep, poll, or wait for jobs. The system reads this file
 # only after your turn ends.
-action: pending
-gpus: 0
-test: false
+action: done
 milestone: core_claim_plus
-notes: ""
+notes: "Hardened: wavefunction-scored hidden test (4x samples) closes all redteam shortcuts (failed or identical to the reference's own state); reference Tcc -13.78 / Tbb -152.89 / Pcc -0.59 MeV; weaker -51.4, shipped -0.68, larger-batch variant +0.04/+0.11 (Tcc only); Pcc short of paper's -3 MeV and not seed-reproduced (see HARDENING.md)."
