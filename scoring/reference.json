@@ -185,6 +185,16 @@
         },
         "deepquark": {
           "type": "proposed",
+          "energy_mev": 5717.41,
+          "binding_mev": -0.59,
+          "mc_error_mev": 0.02,
+          "parameter_count": 2948.0,
+          "color_3bar3": 0.224,
+          "color_3bar6": 0.775,
+          "color_6bar3": 0.001
+        },
+        "_deepquark_paper": {
+          "type": "proposed",
           "energy_mev": 5715.0,
           "binding_mev": -3.0,
           "mc_error_mev": 0.1,
@@ -194,7 +204,7 @@
           "color_6bar3": 0.0
         }
       },
-      "_note": "Paper rows are the published numbers, unchanged (deepquark: DeepQuark, gem: Gaussian expansion method; Tables I/II). mc_error_mev 0.1 is the paper's stated upper bound; parameter_count 1857/2921 is the size of the authors' default networks (the gym counts stored float64 constants of the exported function, 1920/2948 for the same networks). threshold_baseline is the evaluator's fixed no-binding row. The paper selects the lowest of 10 noisy checkpoint estimates, so its numbers carry a small optimistic selection bias; the gym measures the submitted state on fresh samples. The reproduced reference binds this state only weakly (-0.59 MeV on the hidden test, vs the paper's -3 MeV, Table SM-III -3.1 +- 0.2): the paper's own result marks the headroom of this experiment, it is not on the reproduction's measured scale."
+      "_note": "Paper rows are the published numbers, unchanged (deepquark: DeepQuark, gem: Gaussian expansion method; Tables I/II). mc_error_mev 0.1 is the paper's stated upper bound; parameter_count 1857/2921 is the size of the authors' default networks (the gym counts stored float64 constants of the exported function, 1920/2948 for the same networks). threshold_baseline is the evaluator's fixed no-binding row. The paper selects the lowest of 10 noisy checkpoint estimates, so its numbers carry a small optimistic selection bias; the gym measures the submitted state on fresh samples. The reproduced reference binds this state only weakly (-0.59 MeV on the hidden test, vs the paper's -3 MeV, Table SM-III -3.1 +- 0.2): the paper's own result marks the headroom of this experiment and is not on the gym's measured scale (the gym measures the submitted state on fresh samples after the released-code training budget; the paper reports the minimum of its own checkpoint estimates after its training). The paper's Table II row is therefore kept, unchanged, as '_deepquark_paper'; the 'deepquark' row of this experiment is the gym-scale value (the reproduced reference measured by the hidden test), not a paper number."
     }
   },
   "_weights_note": "Weights (hardening iteration): Tcc 0.35, Tbb 0.30, Pcc 0.35. The pentaquark is the paper's novel prediction and the experiment where the reproduced method falls short; Tbb is the converged compact case with the least headroom."
