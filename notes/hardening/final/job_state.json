@@ -1,0 +1,163 @@
+{
+  "done": {
+    "better_bbqq": {
+      "seconds": 1300.7770867347717,
+      "train_seconds": 912.9765479564667,
+      "train_rc": 0,
+      "new_checkpoints": [
+        100,
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109
+      ],
+      "export": {
+        "batch": 4096,
+        "bytes": 35916,
+        "roundtrip_max_diff": 0.0,
+        "system": "bbqq",
+        "S": 1.0,
+        "I": 0.0,
+        "run": 1,
+        "train3_checkpoint": 106,
+        "method_eval_energy_gev": 10.49081,
+        "trainable_parameters": 1857
+      }
+    },
+    "better_ccqq": {
+      "seconds": 2154.129716396332,
+      "train_seconds": 1800.5009973049164,
+      "train_rc": "timeout",
+      "new_checkpoints": [
+        100,
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108
+      ],
+      "export": {
+        "batch": 4096,
+        "bytes": 35916,
+        "roundtrip_max_diff": 0.0,
+        "system": "ccqq",
+        "S": 1.0,
+        "I": 0.0,
+        "run": 1,
+        "train3_checkpoint": 103,
+        "method_eval_energy_gev": 3.86319,
+        "trainable_parameters": 1857
+      }
+    },
+    "better_ccqqc": {
+      "seconds": 1722.7869784832,
+      "train_seconds": 1296.3780868053436,
+      "train_rc": 0,
+      "new_checkpoints": [
+        100,
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109
+      ],
+      "export": {
+        "batch": 4096,
+        "bytes": 44752,
+        "roundtrip_max_diff": 0.0,
+        "system": "ccqqc",
+        "S": 2.5,
+        "I": 0.0,
+        "run": 1,
+        "train3_checkpoint": 27,
+        "method_eval_energy_gev": 5.71729,
+        "trainable_parameters": 2881
+      }
+    },
+    "eval_better_large_batch": {
+      "seconds": 258.0333364009857
+    },
+    "eval_rt_better_more_training": {
+      "seconds": 106.5241470336914
+    },
+    "eval_rt_reference_seed_1": {
+      "seconds": 108.00617599487305
+    },
+    "eval_rt_reference_seed_2": {
+      "seconds": 106.170325756073
+    },
+    "eval_shipped_reference": {
+      "seconds": 145.546466588974
+    },
+    "eval_weaker_less_training": {
+      "seconds": 99.44006776809692
+    },
+    "noise_better_large_batch_101": {
+      "seconds": 159.29501605033875
+    },
+    "noise_reference_101": {
+      "seconds": 156.389821767807
+    },
+    "noise_reference_202": {
+      "seconds": 157.82033276557922
+    },
+    "official_scoring": {
+      "seconds": 248.36158394813538
+    },
+    "shortcut_abs_sign": {
+      "seconds": 172.5700581073761
+    },
+    "shortcut_bloated": {
+      "seconds": 26.245959281921387
+    },
+    "shortcut_bosonic": {
+      "seconds": 214.36094403266907
+    },
+    "shortcut_corrupt": {
+      "seconds": 18.0734965801239
+    },
+    "shortcut_empty": {
+      "seconds": 17.846441984176636
+    },
+    "shortcut_gaussian": {
+      "seconds": 88.50504088401794
+    },
+    "shortcut_kink": {
+      "seconds": 176.81535363197327
+    },
+    "shortcut_legacy_fabricated": {
+      "seconds": 17.89169192314148
+    },
+    "shortcut_legacy_impossible": {
+      "seconds": 17.87929344177246
+    },
+    "shortcut_legacy_threshold_replay": {
+      "seconds": 17.886560678482056
+    },
+    "shortcut_metadata_claims": {
+      "seconds": 165.66917276382446
+    },
+    "shortcut_noisy": {
+      "seconds": 168.37696814537048
+    },
+    "shortcut_stencil": {
+      "seconds": 248.45326161384583
+    }
+  },
+  "not_run": {
+    "repro_pcc": "cancelled at ~2.7 h: Train1 of the seeded from-scratch Pcc reproduction ran at ~4 s/iteration (iteration ~760/1000 after 26 min) and could not finish in the time box"
+  },
+  "job": "4e44104c-455 (1 GPU, della A100 80GB PCIe node)"
+}

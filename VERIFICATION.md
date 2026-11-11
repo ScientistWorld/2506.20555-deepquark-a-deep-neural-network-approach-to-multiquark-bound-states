@@ -1,5 +1,7 @@
 # Verification Report
 
+> Superseded (2026-11-11): the gym now scores exported wavefunctions (`checkpoints/<method>_<sys>/wavefunction.jaxexport`) with an evaluator-owned Hamiltonian and sampler, and scores three systems (Tcc, Tbb, Pcc). See `HARDENING.md`, `briefing/evaluation.md` and `scoring/`; the notes below describe the earlier JSON-report interface.
+
 ## Initial Assessment
 
 The workspace started at `core_claim_plus`, and that milestone remains justified. The accepted score set contains the reproduced AL1 Tcc and Tbb tetraquark targets, both close to the paper's reported energies and binding values. The method implementation is the actual DeepQuark neural variational Monte Carlo code path, while the evaluator reads checkpoint artifacts without importing `method/`.

@@ -1,12 +1,14 @@
 # Constraints
 
-Future submissions must keep the AL1 Hamiltonian and the named physical sectors fixed:
+The physics on the other side of the comparison is fixed by `eval/` and cannot be changed by a submission:
 
-- `tcc_al1_binding`: isoscalar vector `ccqq` tetraquark with the 3878 MeV two-meson threshold used by the evaluator.
-- `tbb_al1_binding`: isoscalar vector `bbqq` tetraquark with the 10644 MeV two-meson threshold used by the evaluator.
+- the AL1 Hamiltonian (masses, Coulomb, constant, hyperfine and linear-confinement terms with their color and spin matrix elements);
+- the physical sectors: `ccqq` and `bbqq` isoscalar J^P = 1+, `ccqqc` isoscalar J^P = 5/2-, color singlet, positive spatial parity, Fermi statistics for identical quarks (light pair with I = 0);
+- the thresholds 3878, 10644 and 5718 MeV;
+- the sampler, its seed, the number of chains and samples, the finite-difference kinetic energy and every acceptance check.
 
-The reproduced reference artifacts use 1857 scored parameters for both accepted tetraquark targets. Future improvements should use comparable model scale for these experiments; if a scientist substantially increases the parameter count, changes the Hamiltonian, changes the threshold, or changes the flavor/spin/isospin sector, that result should be reported as a new experiment rather than replacing the fixed target.
+A submission is only a log-psi function. It is scored as failed (worst value of every scored metric) if it is outside the sector, non-deterministic, depends on how its inputs are batched, has side effects, exceeds 10000 stored float64-equivalent constants, does not let the sampler converge, produces non-finite local energies, reports an energy implausibly far below threshold, or does not finish within 30 minutes per system. Reported numbers in any file are ignored.
 
-Scoring artifacts must preserve the evaluator-visible fields: total energy in MeV, binding energy in MeV, Monte Carlo error in MeV, parameter count, and color-channel proportions. A method that improves binding while inflating noise, omitting the color-channel accounting, or relying on a different threshold should score worse or fail audit; color-channel proportions are diagnostic fields rather than direct optimization targets.
+Scale: the reference networks hold 1920 (tetraquark) and 2948 (pentaquark) stored constants. The budget allows larger ansatzes up to 10000; much larger models, other Hamiltonians or other sectors are different experiments, not improvements on these.
 
-Evaluation code must remain independent of `method/`. Method code may write artifacts in the documented format under `checkpoints/`, but `scripts/evaluate.sh` must score those artifacts without importing solver internals.
+`eval/` never imports `method/`; `eval/train/` and `eval/test/` share no code.

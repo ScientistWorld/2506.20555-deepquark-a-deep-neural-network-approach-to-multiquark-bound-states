@@ -1,5 +1,7 @@
 # Design Notes
 
+> Superseded (2026-11-11): the gym now scores exported wavefunctions (`checkpoints/<method>_<sys>/wavefunction.jaxexport`) with an evaluator-owned Hamiltonian and sampler, and scores three systems (Tcc, Tbb, Pcc). See `HARDENING.md`, `briefing/evaluation.md` and `scoring/`; the notes below describe the earlier JSON-report interface.
+
 ## Final Wrap-Up Checks
 
 - Confirmed `MILESTONES.md` has `**Current: core_claim_plus**` and expanded the Stop Justification with the accepted Tcc/Tbb results and the reason Pccbar does not advance the milestone.

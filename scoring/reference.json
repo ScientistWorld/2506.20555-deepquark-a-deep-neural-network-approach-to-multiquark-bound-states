@@ -2,18 +2,18 @@
   "experiments": {
     "tcc_al1_binding": {
       "description": "AL1 isoscalar vector doubly charmed tetraquark Tcc (ccqbarqbar, I(J^P)=0(1+)), Table I. Threshold D D* = 3878 MeV.",
-      "weight": 0.45,
+      "weight": 0.35,
       "primary_metric": "binding_mev",
       "metrics": {
         "binding_mev": {
           "higher_is_better": false,
           "coefficient": 1.0,
-          "description": "Variational energy minus the fixed lowest two-hadron threshold, in MeV, measured by the evaluator from fresh samples of the submitted wavefunction. More negative is stronger binding. 0 means no bound state; failed or unbound submissions get 0."
+          "description": "Variational energy of the submitted wavefunction minus the fixed lowest two-hadron threshold, in MeV, measured by the evaluator itself (its own AL1 Hamiltonian, Metropolis sampler and finite-difference local energy on 4096 chains x 2048 samples on the hidden test). More negative is stronger binding. 0 means no bound state: unbound, failed or missing submissions get 0 (the worst value)."
         },
         "mc_error_mev": {
           "higher_is_better": false,
           "coefficient": 0.1,
-          "description": "Monte Carlo standard error of that energy (evaluator's sampler, fixed sample count), in MeV, capped at 5.0. Failed or unbound submissions get the cap."
+          "description": "Monte Carlo standard error of that energy from the evaluator's own chains (fixed sample count), in MeV, capped at 5.0. Lower means a wavefunction closer to an eigenstate (lower local-energy variance) and better-mixing sampling. Unbound, failed or missing submissions get the cap."
         },
         "energy_mev": {
           "higher_is_better": false,
@@ -63,22 +63,22 @@
           "color_6bar6": 0.45
         }
       },
-      "_note": "Paper rows are the published numbers (deepquark: DeepQuark, gem: Gaussian expansion method). mc_error_mev 0.1 is the paper's stated upper bound; parameter_count 1857/2921 is the size of the authors' released default network, not a number printed in the paper. threshold_baseline is the evaluator's fixed no-binding row."
+      "_note": "Paper rows are the published numbers, unchanged (deepquark: DeepQuark, gem: Gaussian expansion method; Tables I/II). mc_error_mev 0.1 is the paper's stated upper bound; parameter_count 1857/2921 is the size of the authors' default networks (the gym counts stored float64 constants of the exported function, 1920/2948 for the same networks). threshold_baseline is the evaluator's fixed no-binding row. The paper selects the lowest of 10 noisy checkpoint estimates, so its numbers carry a small optimistic selection bias; the gym measures the submitted state on fresh samples."
     },
     "tbb_al1_binding": {
       "description": "AL1 isoscalar vector doubly bottom tetraquark Tbb (bbqbarqbar, I(J^P)=0(1+)), Table I. Threshold B B* = 10644 MeV.",
-      "weight": 0.35,
+      "weight": 0.3,
       "primary_metric": "binding_mev",
       "metrics": {
         "binding_mev": {
           "higher_is_better": false,
           "coefficient": 1.0,
-          "description": "Variational energy minus the fixed lowest two-hadron threshold, in MeV, measured by the evaluator from fresh samples of the submitted wavefunction. More negative is stronger binding. 0 means no bound state; failed or unbound submissions get 0."
+          "description": "Variational energy of the submitted wavefunction minus the fixed lowest two-hadron threshold, in MeV, measured by the evaluator itself (its own AL1 Hamiltonian, Metropolis sampler and finite-difference local energy on 4096 chains x 2048 samples on the hidden test). More negative is stronger binding. 0 means no bound state: unbound, failed or missing submissions get 0 (the worst value)."
         },
         "mc_error_mev": {
           "higher_is_better": false,
           "coefficient": 0.1,
-          "description": "Monte Carlo standard error of that energy (evaluator's sampler, fixed sample count), in MeV, capped at 5.0. Failed or unbound submissions get the cap."
+          "description": "Monte Carlo standard error of that energy from the evaluator's own chains (fixed sample count), in MeV, capped at 5.0. Lower means a wavefunction closer to an eigenstate (lower local-energy variance) and better-mixing sampling. Unbound, failed or missing submissions get the cap."
         },
         "energy_mev": {
           "higher_is_better": false,
@@ -128,22 +128,22 @@
           "color_6bar6": 0.03
         }
       },
-      "_note": "Paper rows are the published numbers (deepquark: DeepQuark, gem: Gaussian expansion method). mc_error_mev 0.1 is the paper's stated upper bound; parameter_count 1857/2921 is the size of the authors' released default network, not a number printed in the paper. threshold_baseline is the evaluator's fixed no-binding row."
+      "_note": "Paper rows are the published numbers, unchanged (deepquark: DeepQuark, gem: Gaussian expansion method; Tables I/II). mc_error_mev 0.1 is the paper's stated upper bound; parameter_count 1857/2921 is the size of the authors' default networks (the gym counts stored float64 constants of the exported function, 1920/2948 for the same networks). threshold_baseline is the evaluator's fixed no-binding row. The paper selects the lowest of 10 noisy checkpoint estimates, so its numbers carry a small optimistic selection bias; the gym measures the submitted state on fresh samples."
     },
     "pcc_al1_binding": {
       "description": "AL1 isoscalar S=5/2 triply heavy pentaquark Pccbar (ccqq cbar, I(J^P)=0(5/2-)), Table II. Threshold Dbar* Xi_cc* = 5718 MeV.",
-      "weight": 0.2,
+      "weight": 0.35,
       "primary_metric": "binding_mev",
       "metrics": {
         "binding_mev": {
           "higher_is_better": false,
           "coefficient": 1.0,
-          "description": "Variational energy minus the fixed lowest two-hadron threshold, in MeV, measured by the evaluator from fresh samples of the submitted wavefunction. More negative is stronger binding. 0 means no bound state; failed or unbound submissions get 0."
+          "description": "Variational energy of the submitted wavefunction minus the fixed lowest two-hadron threshold, in MeV, measured by the evaluator itself (its own AL1 Hamiltonian, Metropolis sampler and finite-difference local energy on 4096 chains x 2048 samples on the hidden test). More negative is stronger binding. 0 means no bound state: unbound, failed or missing submissions get 0 (the worst value)."
         },
         "mc_error_mev": {
           "higher_is_better": false,
           "coefficient": 0.1,
-          "description": "Monte Carlo standard error of that energy (evaluator's sampler, fixed sample count), in MeV, capped at 5.0. Failed or unbound submissions get the cap."
+          "description": "Monte Carlo standard error of that energy from the evaluator's own chains (fixed sample count), in MeV, capped at 5.0. Lower means a wavefunction closer to an eigenstate (lower local-energy variance) and better-mixing sampling. Unbound, failed or missing submissions get the cap."
         },
         "energy_mev": {
           "higher_is_better": false,
@@ -194,7 +194,8 @@
           "color_6bar3": 0.0
         }
       },
-      "_note": "Paper rows are the published numbers (deepquark: DeepQuark, gem: Gaussian expansion method). mc_error_mev 0.1 is the paper's stated upper bound; parameter_count 1857/2921 is the size of the authors' released default network, not a number printed in the paper. threshold_baseline is the evaluator's fixed no-binding row."
+      "_note": "Paper rows are the published numbers, unchanged (deepquark: DeepQuark, gem: Gaussian expansion method; Tables I/II). mc_error_mev 0.1 is the paper's stated upper bound; parameter_count 1857/2921 is the size of the authors' default networks (the gym counts stored float64 constants of the exported function, 1920/2948 for the same networks). threshold_baseline is the evaluator's fixed no-binding row. The paper selects the lowest of 10 noisy checkpoint estimates, so its numbers carry a small optimistic selection bias; the gym measures the submitted state on fresh samples. The reproduced reference binds this state only weakly (-0.59 MeV on the hidden test, vs the paper's -3 MeV, Table SM-III -3.1 +- 0.2): the paper's own result marks the headroom of this experiment, it is not on the reproduction's measured scale."
     }
-  }
+  },
+  "_weights_note": "Weights (hardening iteration): Tcc 0.35, Tbb 0.30, Pcc 0.35. The pentaquark is the paper's novel prediction and the experiment where the reproduced method falls short; Tbb is the converged compact case with the least headroom."
 }

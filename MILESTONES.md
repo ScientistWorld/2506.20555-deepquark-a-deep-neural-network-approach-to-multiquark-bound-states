@@ -37,5 +37,10 @@
 - Adjusted reference metric coefficients so color-channel proportions are recorded diagnostics rather than direct optimization objectives.
 - Re-ran accepted, train-slice, and test-slice evaluators; validation passed.
 
+### [2026-11-11 00:00] - core_claim_plus
+- Hardening: the gym now scores exported wavefunctions with an evaluator-owned AL1 Hamiltonian, sampler and gates; every redteam shortcut fails or ties its own reference state (HARDENING.md).
+- Hidden-test sample raised 4x; reference is the seed-0 Tcc/Tbb runs and the lr-1e-4-refined Pcc run: Tcc -13.78, Tbb -152.89, Pcc -0.59 MeV binding (paper -15, -153, -3).
+- Pcc stays short of the paper's -3 MeV binding, so `secondary_claims` is not claimed.
+
 ## Stop Justification
 - Completed at milestone `core_claim_plus`.

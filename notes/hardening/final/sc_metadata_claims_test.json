@@ -1,0 +1,60 @@
+{
+  "slice": "test",
+  "experiments": {
+    "tcc_al1_binding": {
+      "results": {
+        "threshold_baseline": {
+          "binding_mev": 0.0,
+          "mc_error_mev": 5.0,
+          "energy_mev": 3878.0
+        },
+        "deepquark": {
+          "binding_mev": -13.782212899634487,
+          "mc_error_mev": 0.09783757877295984,
+          "energy_mev": 3864.2177871003655,
+          "parameter_count": 1920.0,
+          "valid": 1.0,
+          "color_3bar3": 0.5764249563217163,
+          "color_6bar6": 0.4235750436782837
+        }
+      }
+    },
+    "tbb_al1_binding": {
+      "results": {
+        "threshold_baseline": {
+          "binding_mev": 0.0,
+          "mc_error_mev": 5.0,
+          "energy_mev": 10644.0
+        },
+        "deepquark": {
+          "binding_mev": -152.88843512425956,
+          "mc_error_mev": 0.025280239844838556,
+          "energy_mev": 10491.11156487574,
+          "parameter_count": 1920.0,
+          "valid": 1.0,
+          "color_3bar3": 0.9667799472808838,
+          "color_6bar6": 0.03322005271911621
+        }
+      }
+    },
+    "pcc_al1_binding": {
+      "results": {
+        "threshold_baseline": {
+          "binding_mev": 0.0,
+          "mc_error_mev": 5.0,
+          "energy_mev": 5718.0
+        },
+        "deepquark": {
+          "binding_mev": -0.5906991720976293,
+          "mc_error_mev": 0.01985834187061784,
+          "energy_mev": 5717.409300827902,
+          "parameter_count": 2948.0,
+          "valid": 1.0,
+          "color_3bar3": 0.2238013744354248,
+          "color_3bar6": 0.7750225067138672,
+          "color_6bar3": 0.0011761188507080078
+        }
+      }
+    }
+  }
+}

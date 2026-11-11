@@ -1,0 +1,82 @@
+{
+  "slice": "test",
+  "protocol": {
+    "chains": 4096,
+    "samples_per_chain": 2048,
+    "thin": 20,
+    "parameter_budget": 10000,
+    "symmetry_tolerance": 1e-06,
+    "repeat_tolerance": 1e-12,
+    "layout_tolerance_gev": 0.0001,
+    "layout_mean_tolerance_gev": 1e-06,
+    "burn_in_steps": 5000,
+    "consistency_tolerance": 1e-08,
+    "rhat_max": 1.2,
+    "mc_error_cap_mev": 5.0
+  },
+  "submissions": {
+    "tcc_al1_binding/deepquark": {
+      "status": "failed",
+      "reason": "local energies depend on the call layout (4096 of 4096 samples differ, mean |diff| 2.55e+05 GeV)",
+      "trace": "",
+      "gates": {
+        "repeat_determinism": 0.0,
+        "sampler_energy_consistency": 3.552713678800501e-15,
+        "layout_max_energy_diff_gev": 2728974.4361899593,
+        "layout_mean_energy_diff_gev": 254503.73334705643,
+        "layout_mismatches": 4096
+      },
+      "parameter_count": 2017,
+      "fixed_batch": 4096,
+      "step_size": 0.6923832974542331,
+      "accept_spatial": 0.5005846619606018,
+      "accept_discrete": 0.406653493642807,
+      "accept_spatial_burn": 0.5008732080459595,
+      "seconds_sampling": 27.056806325912476,
+      "seconds_energy": 37.465152978897095,
+      "energy_mev_unchecked": 3864.2177870999863
+    },
+    "tbb_al1_binding/deepquark": {
+      "status": "failed",
+      "reason": "local energies depend on the call layout (4096 of 4096 samples differ, mean |diff| 2.31e+05 GeV)",
+      "trace": "",
+      "gates": {
+        "repeat_determinism": 0.0,
+        "sampler_energy_consistency": 4.440892098500626e-15,
+        "layout_max_energy_diff_gev": 2389131.9416234717,
+        "layout_mean_energy_diff_gev": 231423.97516233675,
+        "layout_mismatches": 4096
+      },
+      "parameter_count": 2017,
+      "fixed_batch": 4096,
+      "step_size": 0.45648366388489847,
+      "accept_spatial": 0.49965614080429077,
+      "accept_discrete": 0.18089625239372253,
+      "accept_spatial_burn": 0.49953946471214294,
+      "seconds_sampling": 26.9876549243927,
+      "seconds_energy": 37.42968726158142,
+      "energy_mev_unchecked": 10491.111564875675
+    },
+    "pcc_al1_binding/deepquark": {
+      "status": "failed",
+      "reason": "local energies depend on the call layout (4096 of 4096 samples differ, mean |diff| 2.78e+05 GeV)",
+      "trace": "",
+      "gates": {
+        "repeat_determinism": 0.0,
+        "sampler_energy_consistency": 0.0,
+        "layout_max_energy_diff_gev": 2385621.0106213065,
+        "layout_mean_energy_diff_gev": 278218.4418248456,
+        "layout_mismatches": 4096
+      },
+      "parameter_count": 3045,
+      "fixed_batch": 4096,
+      "step_size": 0.5917066443370548,
+      "accept_spatial": 0.500825047492981,
+      "accept_discrete": 0.4838489592075348,
+      "accept_spatial_burn": 0.500778317451477,
+      "seconds_sampling": 32.8904013633728,
+      "seconds_energy": 46.62378764152527,
+      "energy_mev_unchecked": 5717.409300828014
+    }
+  }
+}

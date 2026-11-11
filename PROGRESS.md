@@ -1,5 +1,7 @@
 # Progress
 
+> Superseded (2026-11-11): the gym now scores exported wavefunctions (`checkpoints/<method>_<sys>/wavefunction.jaxexport`) with an evaluator-owned Hamiltonian and sampler, and scores three systems (Tcc, Tbb, Pcc). See `HARDENING.md`, `briefing/evaluation.md` and `scoring/`; the notes below describe the earlier JSON-report interface.
+
 ## What Works
 
 - Paper analysis is complete for the core AL1 tetraquark and pentaquark claims.
