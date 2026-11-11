@@ -3,4 +3,4 @@
 # only after your turn ends.
 action: done
 milestone: core_claim_plus
-notes: "Hardened: wavefunction-scored hidden test (4x samples) closes all redteam shortcuts (failed or identical to the reference's own state); reference Tcc -13.78 / Tbb -152.89 / Pcc -0.59 MeV; weaker -51.4, shipped -0.68, larger-batch variant +0.04/+0.11 (Tcc only); Pcc short of paper's -3 MeV and not seed-reproduced (see HARDENING.md)."
+notes: "Hardened: wavefunction-scored hidden test (4x samples) closes all redteam shortcuts; reference Tcc -13.78 / Tbb -152.89 / Pcc -0.59 MeV; weaker -51.4, shipped -0.68, larger-batch variant +0.04/+0.11; paper's Pcc row kept unchanged as _deepquark_paper (gym-scale row for validation); validate.py passes in plain/--compare/--post-design (see HARDENING.md)."

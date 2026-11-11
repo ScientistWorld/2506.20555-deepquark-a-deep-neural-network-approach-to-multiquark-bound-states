@@ -1,23 +1,30 @@
 # Overview
 
-DeepQuark applies neural-network variational Monte Carlo to multiquark bound states in constituent quark models. Its central claim is that a symmetry-informed neural wavefunction can solve tetraquark and pentaquark systems competitively with established few-body methods while handling coupled color-spin channels and complex confinement interactions.
+DeepQuark applies neural-network variational Monte Carlo to multiquark bound states in constituent quark models. Its central claim is that a symmetry-informed neural wavefunction solves tetraquark and pentaquark systems competitively with (and variationally slightly below) established few-body methods such as the Gaussian expansion method, describing the molecular Tcc and the compact Tbb with one unbiased ansatz, and predicting a weakly bound triply heavy pentaquark.
 
-This reproduction packages the authors' released implementation, scores AL1 binding energies for representative tetraquark and pentaquark targets, and exposes a reusable evaluator for future method improvements.
+This gym scores three AL1 systems: the doubly charmed tetraquark Tcc, the doubly bottom tetraquark Tbb and the triply heavy pentaquark Pccbar (S = 5/2). A submission is a wavefunction (an exported log-psi function); the evaluator samples it, measures its energy under its own fixed Hamiltonian and reports the binding energy below the fixed two-hadron threshold and its Monte Carlo error. The reference is the authors' released DeepQuark code: Tcc -13.8 MeV, Tbb -152.9 MeV and Pcc -0.6 MeV binding on the hidden test (paper: -15, -153, -3).
 
 ---
 
 # Problem
 
-Solve nonrelativistic few-body bound states in a constituent quark model for multiquark systems with fixed flavor, total spin, total isospin, parity, and color-singlet constraints.
+Find the ground states of multiquark systems in a nonrelativistic constituent quark model and decide whether they are bound below their lowest two-hadron threshold.
 
-The task is to estimate the ground-state energy of selected AL1 Hamiltonians and decide whether a state is bound relative to the lowest allowed two-hadron threshold. A valid solution must handle continuous particle coordinates and discrete color-spin-isospin coupled channels while respecting identical-particle exchange symmetry.
+The Hamiltonian is the AL1 quark potential model (Semay and Silvestre-Brac): constituent quark rest masses and kinetic energies of all particles, plus a pairwise interaction made of a color Coulomb term, a constant, a Gaussian-smeared color-magnetic spin-spin term and a linear confinement term, all weighted by the SU(3) color factor of each pair. There is no spin-orbit or tensor force, so total spin and orbital angular momentum are separately conserved and the ground states are expected in the S wave.
 
-The accepted scored gym targets are:
+A state lives in continuous particle coordinates and in a discrete space of coupled color-spin channels. Each system is fixed to one physical sector: an overall color singlet with given total spin, total isospin and positive spatial parity, obeying Fermi statistics for identical quarks (with the isospin of the light pair included). The two-hadron thresholds are fixed numbers of the same model.
 
-- isoscalar vector doubly charmed tetraquark `ccqq`, spin-parity `1+`
-- isoscalar vector doubly bottom tetraquark `bbqq`, spin-parity `1+`
+Three systems are scored:
 
-The paper also reports pentaquark predictions, but those are not part of the accepted `scores.json` baseline for this gym. All energies are reported in MeV and binding energies are measured relative to the fixed AL1 model thresholds used by the evaluator.
+| Experiment | Particles | Sector | Lowest threshold |
+|---|---|---|---|
+| `tcc_al1_binding` | c c qbar qbar | I(J^P) = 0(1+) | D D* = 3878 MeV |
+| `tbb_al1_binding` | b b qbar qbar | I(J^P) = 0(1+) | B B* = 10644 MeV |
+| `pcc_al1_binding` | c c q q cbar | I(J^P) = 0(5/2-) | Dbar* Xi_cc* = 5718 MeV |
+
+(q = u, d.) The doubly charmed tetraquark is expected to be a shallow, spatially extended state just below its threshold; the doubly bottom tetraquark a compact, deeply bound state; the triply heavy pentaquark is a five-body system whose binding, if any, is very shallow.
+
+The quantity of interest is the energy of the best state one can construct in each sector: by the variational principle, any admissible normalizable state has an energy at or above the true ground state, so a lower energy means a better approximation of the ground state, and an energy below the threshold establishes a bound state. Energies are in MeV; coordinates in GeV^-1 (hbar = c = 1).
 
 ---
 
@@ -25,34 +32,62 @@ The paper also reports pentaquark predictions, but those are not part of the acc
 
 The paper proposes DeepQuark, a deep-neural-network variational Monte Carlo method for multiquark bound states.
 
-The Hamiltonian is the AL1 nonrelativistic constituent quark model: rest masses, kinetic energy in the center-of-mass frame, a color Coulomb term, a Gaussian-smeared hyperfine spin-spin term, and a linear confinement term. The method represents a color-singlet wavefunction in coupled color-spin-isospin bases instead of single-particle orbitals.
+The Hamiltonian is the AL1 nonrelativistic constituent quark model: rest masses, kinetic energy, a color Coulomb term, a Gaussian-smeared hyperfine spin-spin term, and a linear confinement term. The method represents a color-singlet wavefunction in coupled color-spin-isospin bases instead of single-particle orbitals.
 
-The neural wavefunction receives particle coordinates, pairwise distances, and one-hot coupled-channel encodings. A fully connected tanh network is multiplied by a Gaussian boundary factor, then projected with explicit identical-particle antisymmetrization and parity. Samples are drawn with Metropolis-Hastings moves combining Gaussian coordinate kicks and random discrete-channel flips. Parameters are optimized by minimizing the variational energy with stochastic reconfiguration.
+The neural wavefunction receives particle coordinates (center-of-mass frame), pairwise distances, and one-hot coupled-channel encodings. A fully connected tanh network (four hidden layers, about 1900 parameters for the tetraquarks and 2900 for the pentaquark) is multiplied by a Gaussian boundary factor, then projected with explicit identical-particle antisymmetrization and parity. Samples are drawn with Metropolis-Hastings moves combining Gaussian coordinate kicks and random discrete-channel flips. Parameters are optimized by minimizing the variational energy with stochastic reconfiguration; in the final stage ten checkpoints 50 steps apart are evaluated with a large sample and the lowest-energy one is kept.
 
-This workspace vendors the authors' public `DeepQuark` code release under `method/DeepQuark` and adds only packaging, configurable run sizes, and evaluation wrappers.
+This workspace vendors the authors' public `DeepQuark` code release under `method/DeepQuark` and adds only packaging, run-size settings, seeding hooks, a resumable final-stage continuation and an exporter (`multiquark/export.py`) that writes the selected state in the gym's submission format.
+
+Reference schedule (`scripts/reproduce.sh`, released-code settings, `DQ_SEED=0`): 1000 SR iterations at lr 0.02 with 2e4 samples; blocks of 500 iterations with decaying lr until the local-energy variance check passes; ten final blocks of 50 iterations at lr 1e-3; selection of the lowest-energy final checkpoint by the method's own evaluation (2 x 1e5 samples each). For the pentaquark, whose final stage at lr 1e-3 hovers at the threshold, ten more final blocks at lr 1e-4 follow before the selection.
 
 ---
 
 # Evaluation
 
-Evaluation reads method artifacts from `checkpoints/` and writes `scoring/scores.json`. It must not train, sample, or import code from `method/`.
+A method submits, for each system, a wavefunction: a serialized function that the evaluator samples and measures itself. Nothing else a method writes is read; reported energies, errors, parameter counts or thresholds in any JSON file are ignored.
 
-For each experiment, the primary metric is `binding_mev`, the estimated energy minus the lowest threshold energy. Lower is better because more negative values indicate stronger binding. The evaluator also records the absolute energy, Monte Carlo error estimate, parameter count, and sampled color-channel proportions. These constraint metrics discourage trivial changes that alter the ansatz size or ignore the intended coupled-channel structure.
+## Submission interface
 
-Run:
+For method `<method>` and system suffix `ccqq`, `bbqq` or `ccqqc` (Tcc, Tbb, Pcc), write
+
+    checkpoints/<method>_<suffix>/wavefunction.jaxexport
+
+containing `jax.export.export(jax.jit(f), platforms=("cpu", "cuda"))(spec).serialize()` of a function
+
+    f(x: float64[batch, dim]) -> complex128[batch] or float64[batch]    # log psi
+
+* Each row of `x` is the particle coordinates in GeV^-1, particle-major (`x0, y0, z0, x1, ...`), followed by the one-hot code of one coupled color-spin channel. Particle order follows the suffix: `ccqq`/`bbqq` = heavy quark, heavy quark, light antiquark, light antiquark (dim 3*4 + 5 = 17); `ccqqc` = c, c, q, q, cbar (dim 3*5 + 4 = 19).
+* The channel codes, the AL1 parameters and the color/spin matrix elements (including the phase convention of every channel) are defined in the public `eval/train/evaluate.py` (`_tetra_tables`, `_penta_tables`, `AL1`, `QUARK_MASS`). The evaluator builds the Hamiltonian from them.
+* `batch` may be symbolic or a fixed size that divides 4096. The function must be deterministic and pure (no callbacks, random-number ops or other side effects), single-device, and exported for the CUDA platform. Its stored constants may total at most 10000 float64-equivalents (8 bytes each).
+* The method name is the directory prefix; every method found under `checkpoints/` is scored on all three systems, and a missing system scores as failed.
+
+## Measurement
+
+For each submission the evaluator runs its own Metropolis sampler of |psi|^2 over coordinates and channels (4096 chains, fixed seed, adaptive step size, burn-in, thinning) and computes local energies with its own AL1 Hamiltonian: a finite-difference Laplacian with randomly oriented, randomly sized steps for the kinetic term, and the full channel-coupled potential. The function is only ever called on batches that mix rows of many different samples.
+
+The run is scored as **failed** if the file is missing or malformed, violates the interface above, is over the parameter budget, returns non-finite local energies, is not deterministic, returns different values for the same configuration in different calls or call layouts, violates the required exchange symmetry or parity (checked on 65536 samples), does not converge in the sampler (split R-hat > 1.2), reports an energy far below threshold (more than 100, 400, 100 MeV for Tcc, Tbb, Pcc), or exceeds 30 minutes.
+
+## Metrics
+
+| Metric | Scored | Better | Meaning |
+|---|---|---|---|
+| `binding_mev` | yes (coefficient 1.0) | lower | measured energy minus the fixed threshold; 0 if not bound |
+| `mc_error_mev` | yes (coefficient 0.1) | lower | Monte Carlo standard error of that energy from the evaluator's chains, capped at 5 |
+| `energy_mev` | diagnostic | lower | measured total energy |
+| `parameter_count` | diagnostic | — | stored constants in float64 equivalents (gated at 10000) |
+| `valid` | diagnostic | — | 1 if every check passed |
+| `color_*` | diagnostic | — | sampled color-channel proportions |
+
+An unbound, failed or missing submission gets the worst value of both scored metrics (`binding_mev = 0`, `mc_error_mev = 5`). The fixed `threshold_baseline` row (a state at the threshold, no binding) is written alongside every method.
+
+## Running
 
 ```bash
-bash scripts/evaluate.sh
+bash scripts/evaluate_train.sh   # public slice -> scoring/scores_train.json
+bash scripts/evaluate.sh         # same protocol -> scoring/scores.json, then validate.py
 ```
 
-The standard method artifact format is a directory under `checkpoints/` named `<method>_<system>`, where the accepted scored systems are `ccqq` and `bbqq`. Each artifact directory contains:
-
-- `parameters.json`
-- `train.json`
-- `eval.json`
-- `results.json`
-
-The method name is inferred from the artifact directory prefix. For example, `checkpoints/my_solver_ccqq` is scored as method `my_solver` on the `tcc_al1_binding` experiment.
+The public train slice uses a public sampler seed and 4096 x 512 samples per system (about a minute per system on one GPU). The hidden test measures the same quantities with its own seed and a larger sample, so an honest wavefunction scores alike on both up to Monte Carlo noise (on train, roughly 0.1-0.4 MeV for Tcc and below 0.1 MeV for Tbb and Pcc). Experiment weights: Tcc 0.35, Tbb 0.30, Pcc 0.35.
 
 ---
 
@@ -482,6 +517,54 @@ The method name is inferred from the artifact directory prefix. For example, `ch
 - Final verification kept the accepted gym scope to the reproduced Tcc and Tbb experiments.
 - Adjusted reference metric coefficients so color-channel proportions are recorded diagnostics rather than direct optimization objectives.
 - Re-ran accepted, train-slice, and test-slice evaluators; validation passed.
+
+</details>
+
+### Iteration 11: claude-opus-5-5 (hardener)
+- **Milestone**: `core_claim_plus` | **Status**: done
+- **Working time**: 23m | **GPU**: 0.0h
+- **Jobs**: 18 total (11 completed, 3 failed)
+
+<details>
+<summary>Progress Log</summary>
+
+### [2026-06-02 00:00] - method_runs
+- Vendored the authors' DeepQuark implementation and verified the NN-VMC pipeline executes end-to-end.
+
+### [2026-06-02 00:00] - core_claim
+- Reproduced the AL1 isoscalar vector doubly charmed tetraquark result with the actual DeepQuark VMC method.
+- Scored Tcc at 3863.85 MeV, or -14.15 MeV binding against the 3878 MeV threshold, close to the paper's -15 MeV result.
+
+### [2026-06-02 00:00] - core_claim_plus
+- Reproduced the AL1 isoscalar vector doubly bottom tetraquark setting as an additional target.
+- Scored Tbb at 10490.65 MeV, or -153.35 MeV binding against the 10644 MeV threshold, close to the paper's -153 MeV result.
+- Attempted the Pccbar pentaquark extension with the same DeepQuark code; it found a shallow below-threshold state but did not reproduce the paper's -3 MeV secondary binding strongly enough to claim `secondary_claims`.
+
+### [2026-06-02 19:03] - core_claim_plus
+- Audited the continued workspace and confirmed the implementation is the authors' actual DeepQuark NN-VMC method, not a surrogate.
+- Verified `scripts/evaluate.sh` is artifact-based, independent from `method/`, and still passes `python validate.py --compare`.
+- Fixed `scripts/reproduce.sh` so a fresh run regenerates both accepted Tcc and Tbb artifacts before scoring them.
+- Removed generated DeepQuark run outputs from the tracked source tree and ignored future `method/DeepQuark/AL1/` outputs.
+
+### [2026-06-04 07:02] - core_claim_plus
+- Final verification confirmed the claimed milestone remains justified.
+- Generalized the main evaluator to score any `checkpoints/<method>_<system>` artifact for the accepted systems.
+- Re-ran the accepted, train-slice, and test-slice evaluators; validation passed.
+
+### [2026-06-04 07:07] - core_claim_plus
+- Re-audited the workspace after handoff and confirmed the accepted score set still regenerates exactly from checkpoint artifacts.
+- Verified `python validate.py --compare` passes and that `eval/` remains independent of `method/`.
+- Kept Pccbar as a documented partial secondary attempt rather than an accepted target because the reproduced binding remains too shallow versus the paper.
+
+### [2026-06-04 07:11] - core_claim_plus
+- Final verification kept the accepted gym scope to the reproduced Tcc and Tbb experiments.
+- Adjusted reference metric coefficients so color-channel proportions are recorded diagnostics rather than direct optimization objectives.
+- Re-ran accepted, train-slice, and test-slice evaluators; validation passed.
+
+### [2026-11-11 00:00] - core_claim_plus
+- Hardening: the gym now scores exported wavefunctions with an evaluator-owned AL1 Hamiltonian, sampler and gates; every redteam shortcut fails or ties its own reference state (HARDENING.md).
+- Hidden-test sample raised 4x; reference is the seed-0 Tcc/Tbb runs and the lr-1e-4-refined Pcc run: Tcc -13.78, Tbb -152.89, Pcc -0.59 MeV binding (paper -15, -153, -3).
+- Pcc stays short of the paper's -3 MeV binding, so `secondary_claims` is not claimed.
 
 </details>
 
